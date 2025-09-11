@@ -55,6 +55,31 @@ raybeam/
 
 This project uses **Conventional Commits** for commit messages.
 
+## Database
+
+The API uses PostgreSQL by default. Create an `.env` in `apps/api/` (already
+included) to configure the connection string:
+
+```env
+DATABASE_URL=postgresql+psycopg2://raybeam:raybeam@localhost:5432/raybeam
+```
+
+Start a local Postgres instance and run migrations:
+
+```sh
+docker compose -f ops/docker-compose.yml up -d db
+cd apps/api
+alembic upgrade head
+```
+
+For a lightweight SQLite database during development, override the URL:
+
+```sh
+export DATABASE_URL=sqlite:///./local.db
+cd apps/api
+alembic upgrade head
+```
+
 ## License
 
 Distributed under the Apache 2.0 License. See `LICENSE` for more information.

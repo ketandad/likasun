@@ -12,3 +12,15 @@ services:
       dockerfile: ops/web.Dockerfile
     ports:
       - "3000:3000"
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: raybeam
+      POSTGRES_PASSWORD: raybeam
+      POSTGRES_DB: raybeam
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+volumes:
+  pgdata:
