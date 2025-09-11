@@ -1,4 +1,4 @@
-from tests.test_ingest import create_test_client
+from .test_ingest import create_test_client
 
 
 def test_load_demo_assets():

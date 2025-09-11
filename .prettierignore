@@ -9,3 +9,4 @@ tmp/
 tests/fixtures/**/*.csv
 tests/fixtures/**/*.json
 docs/AUDIT.md
+.pytest_cache/

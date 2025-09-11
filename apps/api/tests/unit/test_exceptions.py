@@ -3,10 +3,12 @@ from datetime import date
 import sys
 from pathlib import Path
 
-sys.path.append(str(Path(__file__).resolve().parents[4]))
+BASE = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[4]
+sys.path.extend([str(BASE), str(ROOT)])
 
-from app.services.evaluator import _exception_matches
-from app.models import exceptions as exc_m, assets as asset_m
+from app.services.evaluator import _exception_matches  # noqa: E402
+from app.models import exceptions as exc_m, assets as asset_m  # noqa: E402
 
 
 def test_exception_selector_matches_type_env_cloud():
