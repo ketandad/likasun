@@ -15,6 +15,7 @@ dependencies = [
     "PyYAML",
     "prometheus-client",
     "reportlab",
+    "PyNaCl",
 ]
 
 [tool.black]

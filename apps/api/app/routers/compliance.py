@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 
 from app.dependencies import get_db
 from app.models import results as result_m, runs as run_m
+from app.core.license import license_required
 
 try:
     from reportlab.lib.pagesizes import letter
@@ -61,7 +62,11 @@ FRAMEWORK_FILES = {
 }
 
 
-router = APIRouter(prefix="/compliance", tags=["compliance"])
+router = APIRouter(
+    prefix="/compliance",
+    tags=["compliance"],
+    dependencies=[Depends(license_required("compliance"))],
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[4]

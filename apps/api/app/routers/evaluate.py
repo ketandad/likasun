@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.dependencies import get_db
 from app.jobs.evaluation import enqueue
+from app.core.license import license_required
 from app.models import assets as asset_m
 from app.models import controls as control_m
 from app.models import results as result_m
@@ -18,7 +19,7 @@ from app.models import runs as run_m
 router = APIRouter(prefix="/evaluate", tags=["evaluate"])
 
 
-@router.post("/run")
+@router.post("/run", dependencies=[Depends(license_required("evaluate"))])
 def run_evaluation(
     controls: Optional[List[str]] = None,
     assets: Optional[List[str]] = None,

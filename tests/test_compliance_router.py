@@ -1,11 +1,16 @@
 import sys
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
+
+import json
+import base64
+import uuid
+from nacl import signing
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.append(str(ROOT / "apps/api"))
@@ -14,6 +19,10 @@ from main import app  # type: ignore
 from app.dependencies import get_db
 from app.models.db import Base
 from app.models import results as result_m, assets as asset_m, controls as control_m, runs as run_m
+from app.core.config import settings
+from app.core import license as lic
+
+PRIVATE_KEY_B64 = "gpXAdxXlavULojMEhEjRN8gmpXBOcIrtn3rwlKQCCis="
 
 
 def setup_client():
@@ -34,6 +43,26 @@ def setup_client():
             db.close()
 
     app.dependency_overrides[get_db] = override_get_db
+
+    license_data = {
+        "org": "Acme",
+        "edition": "enterprise",
+        "features": ["evaluate", "compliance"],
+        "seats": 5,
+        "expiry": (date.today() + timedelta(days=30)).isoformat(),
+        "jti": str(uuid.uuid4()),
+        "iat": int(datetime.utcnow().timestamp()),
+    }
+    payload = json.dumps(license_data, sort_keys=True, separators=(",", ":")).encode()
+    sk = signing.SigningKey(base64.b64decode(PRIVATE_KEY_B64))
+    sig = sk.sign(payload).signature
+    license_data["sig"] = base64.b64encode(sig).decode()
+    path = ROOT / "test_license.rbl"
+    path.write_text(json.dumps(license_data))
+    settings.LICENSE_FILE = str(path)
+    lic._current_license = None  # type: ignore
+    lic.load_license()
+
     return TestClient(app), TestingSessionLocal
 
 

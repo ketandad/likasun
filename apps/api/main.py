@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.core.security import users_db
+from app.core.license import load_license, check_seats
 from app.routers import router as api_router
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
@@ -22,9 +23,11 @@ if settings.ENABLE_CORS:
 
 
 @app.on_event("startup")
-def seed_admin() -> None:
-    """Seed an admin user from environment variables."""
+def bootstrap() -> None:
+    """Load license and seed admin user."""
+    load_license()
     if settings.ADMIN_USERNAME and settings.ADMIN_PASSWORD:
+        check_seats(len(users_db) + 1)
         users_db.setdefault(
             settings.ADMIN_USERNAME,
             {
