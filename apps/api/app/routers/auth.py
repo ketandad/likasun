@@ -4,7 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel
 
-from ..core.security import authenticate_user, create_access_token
+from ..core.security import authenticate_user, create_access_token, users_db
+from ..core.license import check_seats
 
 
 class Token(BaseModel):
@@ -27,4 +28,23 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()) -> Token:
         data={"sub": user["username"], "role": user["role"]}
     )
     return Token(access_token=access_token)
+
+
+class UserIn(BaseModel):
+    username: str
+    password: str
+    role: str = "viewer"
+
+
+@router.post("/register")
+async def register(user: UserIn) -> dict:
+    check_seats(len(users_db) + 1)
+    if user.username in users_db:
+        raise HTTPException(status_code=400, detail="User exists")
+    users_db[user.username] = {
+        "username": user.username,
+        "password": user.password,
+        "role": user.role,
+    }
+    return {"status": "ok"}
 
