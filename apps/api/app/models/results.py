@@ -21,3 +21,5 @@ class Result(Base):
     evaluated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+    run_id: Mapped[str] = mapped_column(String, index=True)
+    meta: Mapped[dict] = mapped_column(JSON, default=dict)

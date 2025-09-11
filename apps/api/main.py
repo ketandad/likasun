@@ -1,11 +1,12 @@
 """Main application entrypoint."""
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.core.security import users_db
 from app.routers import router as api_router
+from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
 
 app = FastAPI(docs_url="/docs")
@@ -35,4 +36,10 @@ def seed_admin() -> None:
 
 
 app.include_router(api_router)
+
+
+@app.get("/metrics")
+def metrics() -> Response:
+    data = generate_latest()
+    return Response(content=data, media_type=CONTENT_TYPE_LATEST)
 

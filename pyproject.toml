@@ -13,6 +13,7 @@ dependencies = [
     "PyJWT",
     "python-multipart",
     "PyYAML",
+    "prometheus-client",
 ]
 
 [tool.black]
