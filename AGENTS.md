@@ -50,3 +50,11 @@
 - Evidence Pack PDF route must never 500 on empty data. Return a minimal valid PDF with summary and "No failed requirements".
 - Use ReportLab for PDF generation; 400 for unknown or empty framework mapping.
 - Frontend e2e tests use Playwright. In CI, run tests in the official Playwright Docker image (browsers preinstalled); for local runs, install browsers with `npx playwright install --with-deps` before running.
+
+## Prompt 19 — CI/CD & Releases
+
+- CI: lint (ruff, prettier), api-tests (pytest), web-e2e (Playwright container)
+- Release on tags v\*: build & push raybeam-api/web images (tag + latest), SBOM + scan
+- Alembic must upgrade head in CI before publish
+- /health must expose version from `__version__.py`
+- Release notes include features/fixes/breaking/migrations/rule-pack compatibility
