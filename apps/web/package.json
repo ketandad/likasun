@@ -10,7 +10,7 @@
     "test": "playwright test",
     "test:headed": "playwright test --headed",
     "test:ci": "playwright test --reporter=line",
-    "postinstall": "playwright install --with-deps"
+    "postinstall": "playwright install"
   },
   "dependencies": {
     "axios": "^1.6.7",

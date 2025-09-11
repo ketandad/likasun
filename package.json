@@ -11,6 +11,7 @@
   },
   "scripts": {
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "postinstall": "npm --workspace web run postinstall"
   }
 }

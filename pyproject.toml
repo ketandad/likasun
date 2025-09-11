@@ -16,7 +16,7 @@ dependencies = [
     "prometheus-client",
     "reportlab",
     "PyNaCl",
-    "httpx",
+    "httpx<0.28",
 ]
 
 [tool.black]
