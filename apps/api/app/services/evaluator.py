@@ -21,14 +21,13 @@ from app.models import exceptions as exc_m
 from app.models import results as result_m
 from app.models import runs as run_m
 from app.models.db import SessionLocal
-
-logger = logging.getLogger(__name__)
-
 from app.metrics import (
     evaluate_duration_seconds,
     evaluate_runs_total,
     results_total,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def _get_var(data: Dict[str, Any], path: str) -> Any:

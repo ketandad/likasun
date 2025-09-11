@@ -1,6 +1,6 @@
-from __future__ import annotations
-
 """Prometheus metrics and metrics endpoint."""
+
+from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException, Response
 from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
