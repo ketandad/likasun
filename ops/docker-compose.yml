@@ -1,0 +1,14 @@
+version: "3.9"
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: ops/api.Dockerfile
+    ports:
+      - "8000:8000"
+  web:
+    build:
+      context: ..
+      dockerfile: ops/web.Dockerfile
+    ports:
+      - "3000:3000"
