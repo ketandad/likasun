@@ -2,3 +2,9 @@ node_modules
 build
 dist
 .pytest_cache
+
+*.tar.gz
+*.tgz
+*.zip
+tests/fixtures/**/*.csv
+tests/fixtures/**/*.json
