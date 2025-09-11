@@ -1,0 +1,4 @@
+email,mfa,roles,last_seen
+alice@example.com,true,user,2024-05-01
+bob@example.com,false,admin,2024-04-01
+dave@example.com,false,user,2023-01-01

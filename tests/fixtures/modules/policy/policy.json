@@ -1,0 +1,6 @@
+{
+  "retention_days": 30,
+  "requires_mfa": true,
+  "encryption_at_rest": true,
+  "min_tls": "1.2"
+}

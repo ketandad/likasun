@@ -1,0 +1,5 @@
+Renewal date: 2024-01-01
+Termination notice: 30 days
+Breach notification: 96 hours
+Data location: US
+DPA: yes

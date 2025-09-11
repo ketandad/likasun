@@ -1,0 +1,11 @@
+template_id: CRITICAL_SCOPE_UNREVIEWED
+title: Critical vendors reviewed annually
+logic:
+  or:
+    - {'==': [{'var': 'config.has_critical_scope'}, false]}
+    - {'<=': [{'var': 'config.meta.last_review_days'}, 365]}
+frameworks:
+  - FEDRAMP_LOW
+  - SOC2
+  - CIS
+  - CCPA

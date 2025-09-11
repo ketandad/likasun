@@ -1,0 +1,9 @@
+template_id: DATA_LOCATION_SPECIFIED
+title: Contract specifies data location
+logic:
+  exists: config.data_location
+frameworks:
+  - FEDRAMP_LOW
+  - SOC2
+  - CIS
+  - CCPA

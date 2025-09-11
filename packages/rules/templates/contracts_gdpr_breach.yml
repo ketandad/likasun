@@ -1,0 +1,9 @@
+template_id: GDPR_BREACH_72H
+title: Contract breach window within 72h
+logic:
+  '<=': [{var: config.breach_window_hours}, 72]
+frameworks:
+  - FEDRAMP_LOW
+  - SOC2
+  - CIS
+  - CCPA

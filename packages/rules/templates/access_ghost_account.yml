@@ -1,0 +1,12 @@
+template_id: GHOST_ACCOUNT
+title: No ghost accounts (HR left yet IAM active)
+logic:
+  '!':
+    and:
+      - {'==': [{'var': 'config.hr_status'}, 'left']}
+      - {'==': [{'var': 'config.iam_status'}, 'active']}
+frameworks:
+  - FEDRAMP_LOW
+  - SOC2
+  - CIS
+  - CCPA
