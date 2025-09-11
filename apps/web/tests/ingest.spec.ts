@@ -79,10 +79,10 @@ test('keyboard accessibility triggers validate', async ({ page }) => {
 
 test('drop zone accessible via keyboard', async ({ page }) => {
   await page.goto('/ingest');
-  await page.getByTestId('drop-zone').focus();
-  await expect(page.getByTestId('drop-zone')).toBeFocused();
-});
+  await page.waitForLoadState('networkidle');
   const dropZone = page.getByRole('button', { name: 'Drop files here' });
   await dropZone.focus();
+  await expect(dropZone).toBeFocused();
+});
   await expect(dropZone).toBeFocused();
 });
