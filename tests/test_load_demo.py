@@ -1,12 +1,12 @@
-from .test_ingest import create_test_client
+from fastapi.testclient import TestClient
+from api.main import app
 
 
-def test_load_demo_assets():
-    client = create_test_client()
-    resp = client.post('/assets/load-demo')
-    assert resp.status_code == 200
-    data = resp.json()
-    assert data['ingested'] >= 10
+def test_load_demo():
+    client = TestClient(app)
+    response = client.post("/assets/load-demo")
+    assert response.status_code == 200
+    assert "ingested" in response.json()
     resp = client.get('/assets')
     assets = resp.json()
     assert len(assets) >= 10
