@@ -6,7 +6,7 @@ import logging
 import os
 import re
 import time
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any, Dict, List
 from uuid import uuid4
 
@@ -150,6 +150,8 @@ def _exception_matches(exc: exc_m.Exception, asset: asset_m.Asset) -> bool:
     env = sel.get("env")
     if env and (asset.tags or {}).get("env") != env:
         return False
+    if sel.get("cloud") and sel["cloud"] != asset.cloud:
+        return False
     return True
 
 
@@ -168,7 +170,10 @@ def run_evaluation(
     session.add(run)
     session.commit()
 
-    exceptions = session.scalars(select(exc_m.Exception)).all()
+    today = date.today()
+    exceptions = session.scalars(
+        select(exc_m.Exception).where(exc_m.Exception.expires_at >= today)
+    ).all()
 
     controls_query = (
         session.query(control_m.Control).order_by(control_m.Control.control_id)
