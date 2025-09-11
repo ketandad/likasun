@@ -9,6 +9,10 @@ jobs:
         with:
           python-version: '3.11'
       - run: make lint
+      - name: Run tests
+        run: |
+          mkdir -p apps/test-reports
+          pytest --junitxml=apps/test-reports/pytest.xml
       - name: Install Syft
         run: curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
       - name: Install Grype
@@ -19,8 +23,15 @@ jobs:
         run: syft packages dir:. -o spdx-json > sbom.spdx.json
       - name: Scan (Grype)
         run: grype yourrepo/raybeam-api:${{ github.sha }} --fail-on high || true
+      - name: Upload pytest report
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-report
+          path: apps/test-reports/pytest.xml
+          if-no-files-found: warn
+          retention-days: 7
       - name: Upload SBOM
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: sbom
           path: sbom.spdx.json
