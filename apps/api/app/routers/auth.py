@@ -5,6 +5,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel
 
 from ..core.security import authenticate_user, create_access_token, users_db
+from ..services.audit import record
 from ..core.license import check_seats
 
 
@@ -27,6 +28,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()) -> Token:
     access_token = create_access_token(
         data={"sub": user["username"], "role": user["role"]}
     )
+    record("LOGIN", actor=user.get("username"))
     return Token(access_token=access_token)
 
 

@@ -17,6 +17,7 @@ from ..models import controls as control_m, meta as meta_m
 from packages.rules.engine import ControlTemplate, RuleEngine
 from packages.rules.frameworks import Framework
 from packages.shared.crypto import verify_signature
+from app.services.audit import record
 
 router = APIRouter(prefix="/rules", tags=["rules"])
 
@@ -124,7 +125,9 @@ async def upload_rulepack(
         packs = sorted(RULEPACK_DIR.glob("*.tar.gz"), key=lambda p: p.stat().st_mtime, reverse=True)
         for p in packs[3:]:
             p.unlink()
-    return {"version": version, "control_count": len(controls), "frameworks": frameworks}
+    result = {"version": version, "control_count": len(controls), "frameworks": frameworks}
+    record("RULEPACK_UPLOAD", resource=version, details=result)
+    return result
 
 
 @router.post("/rollback")
@@ -138,7 +141,9 @@ async def rollback_rulepack(version: str, db: Session = Depends(get_db)) -> dict
     except ValueError as exc:  # pragma: no cover - should not happen if pack saved
         raise HTTPException(status_code=400, detail=str(exc))
     _apply_pack(meta, controls, db)
-    return {"version": version, "control_count": len(controls), "frameworks": frameworks}
+    result = {"version": version, "control_count": len(controls), "frameworks": frameworks}
+    record("RULEPACK_ROLLBACK", resource=version, details=result)
+    return result
 
 
 @router.get("/status")

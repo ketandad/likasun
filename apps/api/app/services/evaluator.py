@@ -10,7 +10,6 @@ from datetime import date, datetime
 from typing import Any, Dict, List
 from uuid import uuid4
 
-from prometheus_client import Counter, Summary
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -25,13 +24,10 @@ from app.models.db import SessionLocal
 
 logger = logging.getLogger(__name__)
 
-# Prometheus metrics
-runs_total = Counter("raybeam_evaluate_runs_total", "Total evaluation runs")
-results_total = Counter(
-    "raybeam_evaluate_results_total", "Total evaluation results", ["status"]
-)
-duration_seconds = Summary(
-    "raybeam_evaluate_duration_seconds", "Evaluation duration in seconds"
+from app.metrics import (
+    evaluate_duration_seconds,
+    evaluate_runs_total,
+    results_total,
 )
 
 
@@ -155,7 +151,7 @@ def _exception_matches(exc: exc_m.Exception, asset: asset_m.Asset) -> bool:
     return True
 
 
-@duration_seconds.time()
+@evaluate_duration_seconds.time()
 def run_evaluation(
     job_id: str | None = None,
     *,
@@ -186,6 +182,7 @@ def run_evaluation(
 
     results_count = 0
     assets_count = 0
+    status_counts: Dict[str, int] = {}
 
     for control in controls_list:
         asset_query = session.query(asset_m.Asset).filter(
@@ -211,7 +208,7 @@ def run_evaluation(
             session.bulk_save_objects(control_results)
             session.commit()
             for r in control_results:
-                results_total.labels(status=r.status).inc()
+                status_counts[r.status] = status_counts.get(r.status, 0) + 1
 
     run.controls_count = len(controls_list)
     run.assets_count = assets_count
@@ -220,7 +217,9 @@ def run_evaluation(
     run.status = "completed"
     session.commit()
 
-    runs_total.inc()
+    evaluate_runs_total.inc()
+    for status, count in status_counts.items():
+        results_total.labels(status=status).inc(count)
 
     # Cleanup old runs
     keep = int(os.getenv("EVALUATION_KEEP", "3"))

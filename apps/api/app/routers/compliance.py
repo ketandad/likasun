@@ -18,6 +18,7 @@ from sqlalchemy.orm import Session
 from app.dependencies import get_db
 from app.models import results as result_m, runs as run_m
 from app.core.license import license_required
+from app.services.audit import record
 
 
 class Framework(str, Enum):
@@ -281,7 +282,13 @@ def evidence_pack(
     headers = {
         "Content-Disposition": f'attachment; filename="raybeam_evidence_{framework}_{rid}.pdf"'
     }
-    return StreamingResponse(buf, media_type="application/pdf", headers=headers)
+    resp = StreamingResponse(buf, media_type="application/pdf", headers=headers)
+    record(
+        "COMPLIANCE_EXPORT",
+        resource=rid,
+        details={"framework": framework},
+    )
+    return resp
 
 
 @router.get("/export.csv")

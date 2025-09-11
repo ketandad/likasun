@@ -1,13 +1,14 @@
 """Main application entrypoint."""
 
-from fastapi import FastAPI, Response
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.core.security import users_db
 from app.core.license import load_license, check_seats
+from app.core.logging import LoggingMiddleware
+from app.metrics import router as metrics_router
 from app.routers import router as api_router
-from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
 
 app = FastAPI(docs_url="/docs")
@@ -38,11 +39,7 @@ def bootstrap() -> None:
         )
 
 
+app.add_middleware(LoggingMiddleware)
 app.include_router(api_router)
-
-
-@app.get("/metrics")
-def metrics() -> Response:
-    data = generate_latest()
-    return Response(content=data, media_type=CONTENT_TYPE_LATEST)
+app.include_router(metrics_router)
 
