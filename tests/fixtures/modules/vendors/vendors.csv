@@ -1,0 +1,6 @@
+vendor_id,product,scopes,data_classes,dpa_present,soc2,iso27001,last_review_days
+v1,Prod1,payments,PII,false,false,false,500
+v2,Prod2,analytics,PII,false,false,false,100
+v3,Prod3,health,PII,true,false,false,400
+v4,Prod4,storage,,true,true,false,200
+v5,Prod5,misc,,true,true,true,50

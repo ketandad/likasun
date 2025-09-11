@@ -1,0 +1,11 @@
+template_id: MISSING_SOC2_OR_ISO
+title: Vendor must have SOC2 or ISO27001
+logic:
+  or:
+    - {'==': [{'var': 'config.meta.soc2'}, true]}
+    - {'==': [{'var': 'config.meta.iso27001'}, true]}
+frameworks:
+  - FEDRAMP_LOW
+  - SOC2
+  - CIS
+  - CCPA

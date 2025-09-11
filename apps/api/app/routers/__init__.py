@@ -17,6 +17,7 @@ from . import (
     settings,
     exceptions,
     vendors,
+    modules,
 )
 
 
@@ -36,6 +37,7 @@ router.include_router(settings.router)
 router.include_router(compliance.router)
 router.include_router(results.router)
 router.include_router(exceptions.router)
+router.include_router(modules.router)
 
 __all__ = ["router"]
 

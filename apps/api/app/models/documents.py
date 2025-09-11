@@ -17,3 +17,4 @@ class Document(Base):
     clauses: Mapped[dict] = mapped_column(JSON, default=dict)
     risk_score: Mapped[int | None] = mapped_column(Integer, nullable=True)
     meta: Mapped[dict] = mapped_column(JSON, default=dict)
+    ingest_source: Mapped[str] = mapped_column(String)

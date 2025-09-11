@@ -1,0 +1,11 @@
+template_id: ADMIN_NO_MFA
+title: Admin users must have MFA
+logic:
+  or:
+    - {'!': {'contains': [{'var': 'config.roles'}, 'admin']}}
+    - {'==': [{'var': 'config.mfa'}, true]}
+frameworks:
+  - FEDRAMP_LOW
+  - SOC2
+  - CIS
+  - CCPA
