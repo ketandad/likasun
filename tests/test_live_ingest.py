@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from fastapi.testclient import TestClient
 
-from tests.test_ingest import create_test_client
-from tests.mocks.aws import MockAWSConnector
+from .test_ingest import create_test_client
+from .mocks.aws import MockAWSConnector
 
 
 def test_live_ingest_aws(monkeypatch):

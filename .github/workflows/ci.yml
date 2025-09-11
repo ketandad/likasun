@@ -1,37 +1,81 @@
 name: CI
 on: [push, pull_request]
+
 jobs:
-  build:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - run: make lint
+          cache: 'pip'
+      - run: pip install ruff
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - run: ruff check .
+      - run: npm run format:check
+
+  api-tests:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: raybeam
+          POSTGRES_PASSWORD: raybeam
+          POSTGRES_DB: raybeam
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U raybeam -d raybeam" --health-interval 10s --health-timeout 5s --health-retries 5
+    env:
+      DATABASE_URL: postgresql+psycopg2://raybeam:raybeam@localhost:5432/raybeam
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: apps/api/requirements.txt
+      - run: pip install -r apps/api/requirements.txt
+      - run: pip install pytest
+      - name: Run migrations
+        run: alembic -c apps/api/alembic.ini upgrade head
       - name: Run tests
         run: |
-          mkdir -p apps/test-reports
-          pytest --junitxml=apps/test-reports/pytest.xml
-      - name: Install Syft
-        run: curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
-      - name: Install Grype
-        run: curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
-      - name: Build API image
-        run: docker build -f ops/Dockerfile.api -t yourrepo/raybeam-api:${{ github.sha }} .
-      - name: SBOM (Syft)
-        run: syft packages dir:. -o spdx-json > sbom.spdx.json
-      - name: Scan (Grype)
-        run: grype yourrepo/raybeam-api:${{ github.sha }} --fail-on high || true
-      - name: Upload pytest report
+          pytest -q --junitxml=test-results/pytest.xml
+      - name: Upload JUnit
         uses: actions/upload-artifact@v4
         with:
-          name: pytest-report
-          path: apps/test-reports/pytest.xml
-          if-no-files-found: warn
-          retention-days: 7
-      - name: Upload SBOM
-        uses: actions/upload-artifact@v4
+          name: api-tests-junit
+          path: test-results/pytest.xml
+
+  web-e2e:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.47.0-jammy
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          name: sbom
-          path: sbom.spdx.json
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: apps/web/package-lock.json
+      - name: Install deps
+        working-directory: apps/web
+        run: npm ci
+      - name: Build and start app
+        working-directory: apps/web
+        run: |
+          npm run build
+          npm run start &
+      - name: Run Playwright tests
+        working-directory: apps/web
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
+        run: npm run test:ci

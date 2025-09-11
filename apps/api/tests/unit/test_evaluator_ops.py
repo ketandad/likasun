@@ -1,10 +1,12 @@
 import sys
 from pathlib import Path
 
-sys.path.append(str(Path(__file__).resolve().parents[4]))
+BASE = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[4]
+sys.path.extend([str(BASE), str(ROOT)])
 
-from app.services.evaluator import _evaluate, evaluate_control
-from app.models import controls as control_m, assets as asset_m
+from app.services.evaluator import _evaluate, evaluate_control  # noqa: E402
+from app.models import controls as control_m, assets as asset_m  # noqa: E402
 
 
 def test_evaluator_basic_ops():

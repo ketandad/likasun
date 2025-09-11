@@ -1,9 +1,15 @@
 import importlib
 import os
+import sys
+from pathlib import Path
 
 import pytest
 
-from app.security import egress
+BASE = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[4]
+sys.path.extend([str(BASE), str(ROOT)])
+
+from app.security import egress  # noqa: E402
 
 
 def reload_module():

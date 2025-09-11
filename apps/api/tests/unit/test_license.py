@@ -12,19 +12,20 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-sys.path.append(str(Path(__file__).resolve().parents[4]))
+BASE = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[4]
+sys.path.extend([str(BASE), str(ROOT)])
 
-from main import app
-from app.core import license as lic
-from app.core.config import settings
-from app.core.security import users_db
-from app.dependencies import get_db
-from app.models.db import Base
-from app.models import db as models_db
-from app.services import evaluator
+from main import app  # noqa: E402
+from app.core import license as lic  # noqa: E402
+from app.core.config import settings  # noqa: E402
+from app.core.security import users_db  # noqa: E402
+from app.dependencies import get_db  # noqa: E402
+from app.models.db import Base  # noqa: E402
+from app.models import db as models_db  # noqa: E402
+from app.services import evaluator  # noqa: E402
 
 PRIVATE_KEY_B64 = "gpXAdxXlavULojMEhEjRN8gmpXBOcIrtn3rwlKQCCis="
-ROOT = Path(__file__).resolve().parents[4]
 FIXTURES = ROOT / "tests" / "fixtures" / "licenses"
 
 
