@@ -1,38 +1,28 @@
 # Audit Logs
 
-The API writes to the `audit_logs` table for key actions:
+The API writes to the `audit_logs` table for key actions such as logins, ingestion, evaluations, exceptions, rule-pack updates, licenses, and compliance exports.
 
-- `LOGIN`
-- `INGEST_UPLOAD`
-- `INGEST_PARSE`
-- `INGEST_LIVE`
-- `EVALUATE_RUN`
-- `EXCEPTION_CREATE`
-- `EXCEPTION_DELETE`
-- `RULEPACK_UPLOAD`
-- `RULEPACK_ROLLBACK`
-- `LICENSE_UPLOAD`
-- `COMPLIANCE_EXPORT`
+## Schema
 
-Each row records:
-
-| column   | description |
-|----------|-------------|
-| `id`     | UUID primary key |
-| `ts`     | timestamp of action |
-| `actor`  | user email/id or null for system |
-| `action` | action string |
-| `resource` | related resource id |
-| `details` | JSON details |
+| column   | description                         |
+|----------|-------------------------------------|
+| `id`     | UUID primary key                     |
+| `ts`     | timestamp of action                  |
+| `actor`  | user email/id or null for system     |
+| `action` | action string                        |
+| `resource` | related resource id               |
+| `details` | JSON details                       |
 
 Indexes on `ts` and `action` allow efficient time and action queries.
 
-### Example export
+## Retention
+
+Rotate or purge audit rows according to your compliance requirements. The API does not delete logs automatically.
+
+## Export
 
 ```sql
 COPY (
   SELECT * FROM audit_logs WHERE ts > NOW() - INTERVAL '30 days'
 ) TO STDOUT WITH CSV
 ```
-
-Rotate or purge audit rows according to compliance requirements.
