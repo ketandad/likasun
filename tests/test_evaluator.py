@@ -1,4 +1,5 @@
 import sys
+from datetime import date
 from pathlib import Path
 
 from fastapi.testclient import TestClient
@@ -42,30 +43,30 @@ def test_exception_waives_result():
     client, SessionLocal = setup_client()
     session = SessionLocal()
     control = control_m.Control(
-        control_id="C1",
-        title="Check bucket public",
-        category="storage",
+        control_id="IAM_USERS_MFA",
+        title="Users must have MFA",
+        category="iam",
         severity="high",
-        applies_to={"types": ["Bucket"]},
-        logic={"==": [{"var": "config.public"}, False]},
+        applies_to={"types": ["User"]},
+        logic={"==": [{"var": "config.mfa"}, True]},
         frameworks=["FedRAMP-Moderate"],
         fix={},
     )
     asset = asset_m.Asset(
-        asset_id="A1",
+        asset_id="user1",
         cloud="aws",
-        type="Bucket",
-        region="us",
+        type="User",
+        region="us-east-1",
         tags={"env": "prod"},
-        config={"public": True},
+        config={"mfa": False},
         evidence={"source": "x", "pointer": "y"},
         ingest_source="test",
     )
     exc = exc_m.Exception(
-        control_id="C1",
-        selector={"asset_id": "A1"},
+        control_id="IAM_USERS_MFA",
+        selector={"type": "User", "env": "prod"},
         reason="waived",
-        expires_at=None,
+        expires_at=date(2099, 1, 1),
         created_by="me",
     )
     session.add_all([control, asset, exc])
@@ -81,6 +82,50 @@ def test_exception_waives_result():
     res = session.query(result_m.Result).one()
     assert res.status == "WAIVED"
     assert res.meta["prev_status"] == "FAIL"
+
+
+def test_expired_exception_ignored():
+    client, SessionLocal = setup_client()
+    session = SessionLocal()
+    control = control_m.Control(
+        control_id="IAM_USERS_MFA",
+        title="Users must have MFA",
+        category="iam",
+        severity="high",
+        applies_to={"types": ["User"]},
+        logic={"==": [{"var": "config.mfa"}, True]},
+        frameworks=["FedRAMP-Moderate"],
+        fix={},
+    )
+    asset = asset_m.Asset(
+        asset_id="user1",
+        cloud="aws",
+        type="User",
+        region="us-east-1",
+        tags={"env": "prod"},
+        config={"mfa": False},
+        evidence={"source": "x", "pointer": "y"},
+        ingest_source="test",
+    )
+    exc = exc_m.Exception(
+        control_id="IAM_USERS_MFA",
+        selector={"type": "User", "env": "prod"},
+        reason="waived",
+        expires_at=date(2020, 1, 1),
+        created_by="me",
+    )
+    session.add_all([control, asset, exc])
+    session.commit()
+    session.close()
+
+    from app.services import evaluator
+
+    evaluator.SessionLocal = SessionLocal
+    evaluator.run_evaluation()
+
+    session = SessionLocal()
+    res = session.query(result_m.Result).one()
+    assert res.status == "FAIL"
 
 
 def test_framework_filtering():
