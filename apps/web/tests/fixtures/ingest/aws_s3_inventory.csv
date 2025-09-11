@@ -1,0 +1,3 @@
+Bucket,Region,Tag_env,Tag_owner
+bucket-a,us-east-1,prod,alice
+bucket-b,us-east-1,dev,bob
