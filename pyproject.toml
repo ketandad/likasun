@@ -1,0 +1,19 @@
+[project]
+name = "raybeam"
+version = "0.1.0"
+requires-python = ">=3.11"
+description = "Monorepo for raybeam"
+
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+exclude = "(node_modules|dist|build)"
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+exclude = ["node_modules", "dist", "build"]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
