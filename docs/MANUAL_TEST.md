@@ -1,11 +1,59 @@
-# Manual Testing
+# Manual Test Playbook
 
-1. Ingest demo data using the existing ingest endpoints (see fixtures in
-   `tests/fixtures/ingest`).
-2. POST `/evaluate/run` to execute an evaluation.
-3. Confirm `/evaluate/runs` lists the new run with result counts.
-4. GET `/evaluate/results?framework=FedRAMP-Moderate&status=FAIL` and verify
-   that failing results for the framework are returned.
-5. GET `/results/export.csv?framework=FedRAMP-Moderate&status=FAIL` and verify
-   a CSV file downloads with columns:
-   `run_id,evaluated_at,status,severity,category,framework_ids,control_id,control_title,asset_id,asset_type,cloud,region,env,evidence_source,evidence_pointer,fix`.
+## Setup
+
+```bash
+docker compose -f ops/docker-compose.yml up -d db
+cd apps/api
+alembic upgrade head
+export RB_ADMIN_EMAIL=admin@local RB_ADMIN_PASSWORD=admin
+```
+
+## Ingest Demo
+
+```bash
+make demo-pack
+```
+
+1. Visit `/ingest` in the web UI.
+2. Upload files from `tests/fixtures/ingest/`.
+3. Navigate to `/assets` and verify more than ten assets exist.
+
+## Evaluate
+
+```bash
+curl -X POST http://localhost:8000/evaluate/run
+```
+
+Check `/results/summary` for counts.
+
+## Compliance
+
+```bash
+curl http://localhost:8000/compliance/summary?framework=FedRAMP-Moderate
+curl -o evidence.pdf http://localhost:8000/compliance/evidence-pack?framework=PCI-DSS
+curl -o export.csv http://localhost:8000/compliance/export.csv?framework=PCI-DSS
+```
+
+## Exceptions
+
+1. Add a waiver via `/exceptions`.
+2. Run evaluation again. A previous `FAIL` should become `WAIVED`.
+
+## License
+
+1. Upload the dev license at `/settings/license`.
+2. Attempt a premium feature with a community license – expect HTTP 402.
+
+## Security
+
+1. Call an outbound URL not in the allowlist – request should be blocked.
+2. Inspect a web response header for `CSP` and `X-Frame-Options`.
+
+## Observability
+
+If `METRICS_ENABLED=true`:
+
+```bash
+curl http://localhost:8000/metrics
+```

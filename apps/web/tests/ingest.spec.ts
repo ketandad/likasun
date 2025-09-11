@@ -55,3 +55,10 @@ test('keyboard accessibility triggers validate', async ({ page }) => {
   await page.keyboard.press('Enter');
   await promise;
 });
+
+test('drop zone accessible via keyboard', async ({ page }) => {
+  await page.goto('/ingest');
+  await page.keyboard.press('Tab');
+  const input = page.locator('input[type="file"]');
+  await expect(input).toBeFocused();
+});

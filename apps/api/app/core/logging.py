@@ -1,6 +1,6 @@
-from __future__ import annotations
-
 """Request logging middleware emitting structured JSON and metrics."""
+
+from __future__ import annotations
 
 import json
 import logging

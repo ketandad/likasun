@@ -29,7 +29,11 @@ target-version = "py311"
 exclude = ["node_modules", "dist", "build"]
 
 [tool.ruff.lint]
-per-file-ignores = {"tests/test_*.py" = ["E402"]}
+
+[tool.ruff.lint.per-file-ignores]
+"tests/test_*.py" = ["E402"]
+"apps/api/alembic/**/*.py" = ["E402"]
+"ops/*.py" = ["E402"]
 
 [build-system]
 requires = ["setuptools", "wheel"]

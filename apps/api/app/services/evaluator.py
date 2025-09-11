@@ -21,14 +21,13 @@ from app.models import exceptions as exc_m
 from app.models import results as result_m
 from app.models import runs as run_m
 from app.models.db import SessionLocal
-
-logger = logging.getLogger(__name__)
-
 from app.metrics import (
     evaluate_duration_seconds,
     evaluate_runs_total,
     results_total,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def _get_var(data: Dict[str, Any], path: str) -> Any:
@@ -185,8 +184,11 @@ def run_evaluation(
     status_counts: Dict[str, int] = {}
 
     for control in controls_list:
+        types = control.applies_to.get("types")
+        if not types and control.applies_to.get("type"):
+            types = [control.applies_to.get("type")]
         asset_query = session.query(asset_m.Asset).filter(
-            asset_m.Asset.type.in_(control.applies_to.get("types", []))
+            asset_m.Asset.type.in_(types or [])
         )
         if assets_scope:
             asset_query = asset_query.filter(

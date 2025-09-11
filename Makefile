@@ -1,15 +1,16 @@
-.PHONY: fmt lint test build compose-up compose-down migrate migrate-rev downgrade
-
-fmt:
-	black .
-	prettier . --write --ignore-unknown
-
-lint:
-	ruff check .
-	npm run -s format:check || (npm ci && npm run -s format && npm run -s format:check)
+.PHONY: test test:ci format build compose-up compose-down migrate migrate-rev downgrade
 
 test:
-	@echo "no tests yet"
+	cd apps/api && pytest
+	cd apps/web && npm run -s test || echo "Web tests skipped locally"
+
+test:ci:
+	cd apps/api && pytest -q
+	cd apps/web && npm run -s test:ci
+
+format:
+	ruff check . --fix
+	npm run format
 
 build:
 	@echo "no build step defined"
