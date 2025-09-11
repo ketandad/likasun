@@ -1,0 +1,15 @@
+- requirement_id: R1
+  title: Requirement 1
+  mapped_controls: [C1]
+- requirement_id: R2
+  title: Requirement 2
+  mapped_controls: [C2]
+- requirement_id: R3
+  title: Requirement 3
+  mapped_controls: [C3]
+- requirement_id: R4
+  title: Requirement 4
+  mapped_controls: [C4]
+- requirement_id: R5
+  title: Requirement 5
+  mapped_controls: [C5]
