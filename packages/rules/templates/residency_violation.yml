@@ -1,7 +1,7 @@
 template_id: RESIDENCY_VIOLATION
 title: Data resides in allowed regions
 logic:
-  in: [{var: region}, {var: config.allowed_regions}]
+  in: [{ var: region }, { var: config.allowed_regions }]
 frameworks:
   - FEDRAMP_LOW
   - SOC2

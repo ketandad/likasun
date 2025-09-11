@@ -1,7 +1,5 @@
 import base64
-import json
 import tarfile
-from io import BytesIO
 from pathlib import Path
 
 import yaml

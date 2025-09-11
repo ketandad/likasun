@@ -13,7 +13,10 @@ interface Result {
 export default function ResultsPage() {
   const [data, setData] = useState<Result[]>([]);
   useEffect(() => {
-    api.get('/results').then(r => setData(r.data || [])).catch(() => {});
+    api
+      .get('/results')
+      .then((r) => setData(r.data || []))
+      .catch(() => {});
   }, []);
   return (
     <div>
@@ -22,7 +25,7 @@ export default function ResultsPage() {
         data={data}
         columns={[
           { key: 'control', header: 'Control' },
-          { key: 'status', header: 'Status', render: row => <StatusBadge status={row.status} /> },
+          { key: 'status', header: 'Status', render: (row) => <StatusBadge status={row.status} /> },
         ]}
       />
     </div>

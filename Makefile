@@ -6,8 +6,7 @@ fmt:
 
 lint:
 	ruff check .
-	eslint . --ext .js,.jsx,.ts,.tsx || true
-	prettier . --check --ignore-unknown
+	npm run -s format:check || (npm ci && npm run -s format && npm run -s format:check)
 
 test:
 	@echo "no tests yet"

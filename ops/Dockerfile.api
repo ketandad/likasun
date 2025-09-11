@@ -1,0 +1,23 @@
+# ---- build stage ----
+FROM python:3.11-slim AS build
+WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential && rm -rf /var/lib/apt/lists/*
+COPY apps/api/ /app/
+RUN pip install --upgrade pip && pip wheel --no-cache-dir --no-deps -w /wheels -r requirements.txt
+
+# ---- runtime stage ----
+FROM python:3.11-slim AS runtime
+# create non-root user
+RUN useradd -u 10001 -m raybeam
+WORKDIR /app
+# copy wheels and install
+COPY --from=build /wheels /wheels
+RUN pip install --no-cache /wheels/*
+# copy only runtime code
+COPY apps/api/ /app/
+# lock down: drop package manager and set RO rootfs later via compose
+RUN rm -rf /var/lib/apt/lists/* /usr/lib/apt /etc/apt
+USER 10001:10001
+# healthcheck via gunicorn app ping
+ENV PYTHONUNBUFFERED=1
+CMD ["python", "-m", "app.main"]

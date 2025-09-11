@@ -2,8 +2,8 @@ template_id: POLICY_MISMATCH_MFA
 title: MFA enabled as policy requires
 logic:
   or:
-    - {'==': [{'var': 'config.policy_requires_mfa'}, false]}
-    - {'==': [{'var': 'config.actual_mfa'}, true]}
+    - { '==': [{ 'var': 'config.policy_requires_mfa' }, false] }
+    - { '==': [{ 'var': 'config.actual_mfa' }, true] }
 frameworks:
   - FEDRAMP_LOW
   - SOC2

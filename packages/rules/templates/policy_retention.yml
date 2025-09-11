@@ -1,7 +1,7 @@
 template_id: POLICY_MISMATCH_RETENTION
 title: Retention meets policy
 logic:
-  '>=': [{'var': 'config.actual_retention_days'}, {'var': 'config.policy_retention_days'}]
+  '>=': [{ 'var': 'config.actual_retention_days' }, { 'var': 'config.policy_retention_days' }]
 frameworks:
   - FEDRAMP_LOW
   - SOC2

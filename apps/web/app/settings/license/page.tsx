@@ -7,7 +7,7 @@ export default function LicensePage() {
   const [info, setInfo] = useState<any>(null);
   const { push } = useToast();
   useEffect(() => {
-    api.get('/settings/license').then(r => setInfo(r.data));
+    api.get('/settings/license').then((r) => setInfo(r.data));
   }, []);
   async function upload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];

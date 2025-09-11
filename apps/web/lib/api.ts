@@ -6,13 +6,13 @@ const api = axios.create({
 });
 
 api.interceptors.response.use(
-  response => response,
-  error => {
+  (response) => response,
+  (error) => {
     if (error.response && error.response.status === 401 && typeof window !== 'undefined') {
       window.location.href = '/login';
-  }
-  return Promise.reject(error);
-  }
+    }
+    return Promise.reject(error);
+  },
 );
 
 export default api;
@@ -24,7 +24,10 @@ export async function uploadFiles(formData: FormData): Promise<Record<string, st
   return res.data.upload_ids || {};
 }
 
-export async function parseUpload(cloud: string, uploadId: string[]): Promise<{ ingested: number }> {
+export async function parseUpload(
+  cloud: string,
+  uploadId: string[],
+): Promise<{ ingested: number }> {
   const res = await api.post('/ingest/parse', null, {
     params: { cloud, upload_id: uploadId },
   });

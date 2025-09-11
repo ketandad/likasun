@@ -2,8 +2,8 @@ template_id: POLICY_MISMATCH_ENCRYPTION
 title: Encryption at rest matches policy
 logic:
   or:
-    - {'==': [{'var': 'config.policy_encryption_at_rest'}, false]}
-    - {'==': [{'var': 'config.actual_encryption_at_rest'}, true]}
+    - { '==': [{ 'var': 'config.policy_encryption_at_rest' }, false] }
+    - { '==': [{ 'var': 'config.actual_encryption_at_rest' }, true] }
 frameworks:
   - FEDRAMP_LOW
   - SOC2

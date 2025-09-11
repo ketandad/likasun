@@ -2,8 +2,8 @@ template_id: PII_NO_DPA
 title: Vendors processing PII must have DPA
 logic:
   or:
-    - {'!': {'contains': [{'var': 'config.data_classes'}, 'PII']}}
-    - {'==': [{'var': 'config.meta.dpa_present'}, true]}
+    - { '!': { 'contains': [{ 'var': 'config.data_classes' }, 'PII'] } }
+    - { '==': [{ 'var': 'config.meta.dpa_present' }, true] }
 frameworks:
   - FEDRAMP_LOW
   - SOC2

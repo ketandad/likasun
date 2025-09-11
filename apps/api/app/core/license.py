@@ -1,8 +1,8 @@
 import base64
 import json
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from pathlib import Path
-from typing import Any, Callable
+from typing import Callable
 
 from fastapi import HTTPException
 from nacl.exceptions import BadSignatureError

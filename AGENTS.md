@@ -37,14 +37,14 @@
   - expired license blocks premium
   - missing features block specific endpoints
 - seat enforcement works
- 
+
 ## Prompt 14 — Ingest UI & Fixtures
 
 - Build /ingest page with offline exports and live ingestion tabs
 - Drag-drop multiple files, POST /ingest/files then /ingest/parse
 - Live ingestion endpoints: GET /ingest/live/permissions and POST /ingest/live
 - Load demo assets via POST /assets/load-demo and redirect to /results
-- Never commit binary archives (*.tar.gz, *.zip); generate packs with `make demo-pack`
+- Never commit binary archives (_.tar.gz, _.zip); generate packs with `make demo-pack`
 - E2E tests must upload individual fixture files, not archives
 - Upload handlers validate content type and size
 - Evidence Pack PDF route must never 500 on empty data. Return a minimal valid PDF with summary and "No failed requirements".

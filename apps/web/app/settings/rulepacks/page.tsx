@@ -7,7 +7,7 @@ export default function RulepacksPage() {
   const [info, setInfo] = useState<any>(null);
   const { push } = useToast();
   useEffect(() => {
-    api.get('/settings/rulepacks').then(r => setInfo(r.data));
+    api.get('/settings/rulepacks').then((r) => setInfo(r.data));
   }, []);
   async function upload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -32,10 +32,14 @@ export default function RulepacksPage() {
       )}
       <input type="file" onChange={upload} className="mb-4" />
       {info && info.history && (
-        <select onChange={e => rollback(e.target.value)} defaultValue="">
-          <option value="" disabled>Rollback...</option>
+        <select onChange={(e) => rollback(e.target.value)} defaultValue="">
+          <option value="" disabled>
+            Rollback...
+          </option>
           {info.history.map((v: string) => (
-            <option key={v} value={v}>{v}</option>
+            <option key={v} value={v}>
+              {v}
+            </option>
           ))}
         </select>
       )}

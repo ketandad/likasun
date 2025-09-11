@@ -3,8 +3,8 @@ title: No ghost accounts (HR left yet IAM active)
 logic:
   '!':
     and:
-      - {'==': [{'var': 'config.hr_status'}, 'left']}
-      - {'==': [{'var': 'config.iam_status'}, 'active']}
+      - { '==': [{ 'var': 'config.hr_status' }, 'left'] }
+      - { '==': [{ 'var': 'config.iam_status' }, 'active'] }
 frameworks:
   - FEDRAMP_LOW
   - SOC2
