@@ -1,4 +1,4 @@
-.PHONY: test test:ci format build compose-up compose-down migrate migrate-rev downgrade
+.PHONY: test test:ci format build compose-up compose-down migrate migrate-rev downgrade codespace-demo
 
 test:
 	cd apps/api && pytest
@@ -28,5 +28,8 @@ migrate-rev: ; cd $(API_DIR) && alembic revision --autogenerate -m "$(m)"
 downgrade: ; cd $(API_DIR) && alembic downgrade -1
 
 demo-pack:
-	./ops/make_demo_pack.sh
-	@echo "Use the pack at tmp/demo_ingest_pack.tar.gz"
+        ./ops/make_demo_pack.sh
+        @echo "Use the pack at tmp/demo_ingest_pack.tar.gz"
+
+codespace-demo:
+	bash scripts/start_demo.sh
