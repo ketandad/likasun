@@ -37,8 +37,8 @@ export default function IngestPage() {
 
   function handleFiles(list: FileList | null) {
     if (!list) return;
-    const arr = Array.from(list).filter(f => ALLOWED.some(ext => f.name.endsWith(ext)));
-    setFiles(prev => [...prev, ...arr]);
+    const arr = Array.from(list).filter((f) => ALLOWED.some((ext) => f.name.endsWith(ext)));
+    setFiles((prev) => [...prev, ...arr]);
   }
 
   async function uploadAndParse() {
@@ -46,10 +46,10 @@ export default function IngestPage() {
     setUploading(true);
     try {
       const form = new FormData();
-      files.forEach(f => form.append('files', f));
+      files.forEach((f) => form.append('files', f));
       const uploads = await uploadFiles(form);
       const groups: Record<string, string[]> = {};
-      files.forEach(f => {
+      files.forEach((f) => {
         const cloud = detectCloud(f.name);
         const uid = uploads[f.name];
         if (!uid) return;
@@ -102,10 +102,7 @@ export default function IngestPage() {
     <div>
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl">Ingest</h1>
-        <button
-          onClick={onLoadDemo}
-          className="bg-green-600 text-white px-3 py-2 rounded"
-        >
+        <button onClick={onLoadDemo} className="bg-green-600 text-white px-3 py-2 rounded">
           Load Demo Assets
         </button>
       </div>
@@ -113,8 +110,8 @@ export default function IngestPage() {
         <section>
           <h2 className="text-xl mb-2">Offline Exports</h2>
           <div
-            onDragOver={e => e.preventDefault()}
-            onDrop={e => {
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => {
               e.preventDefault();
               handleFiles(e.dataTransfer.files);
             }}
@@ -122,7 +119,7 @@ export default function IngestPage() {
             role="button"
             tabIndex={0}
             aria-label="Upload files"
-            onKeyDown={e => {
+            onKeyDown={(e) => {
               if (e.key === 'Enter') fileInput.current?.click();
             }}
             onClick={() => fileInput.current?.click()}
@@ -133,7 +130,7 @@ export default function IngestPage() {
               multiple
               accept={ALLOWED.join(',')}
               className="hidden"
-              onChange={e => handleFiles(e.target.files)}
+              onChange={(e) => handleFiles(e.target.files)}
             />
             <p>Drag files here or click to select</p>
           </div>
@@ -160,10 +157,7 @@ export default function IngestPage() {
           {summary && (
             <div className="mt-2" aria-live="polite">
               {summary.files} files uploaded • {summary.assets} assets normalized –{' '}
-              <Link
-                href="/results?sort_by=evaluated_at&sort_dir=desc"
-                className="underline"
-              >
+              <Link href="/results?sort_by=evaluated_at&sort_dir=desc" className="underline">
                 View assets
               </Link>
             </div>
@@ -172,13 +166,11 @@ export default function IngestPage() {
         <section>
           <h2 className="text-xl mb-2">Live Ingestion</h2>
           <div className="mb-2 flex space-x-2">
-            {['aws', 'azure', 'gcp'].map(c => (
+            {['aws', 'azure', 'gcp'].map((c) => (
               <button
                 key={c}
                 onClick={() => setTab(c as 'aws' | 'azure' | 'gcp')}
-                className={`px-3 py-1 border rounded ${
-                  tab === c ? 'bg-gray-200' : ''
-                }`}
+                className={`px-3 py-1 border rounded ${tab === c ? 'bg-gray-200' : ''}`}
               >
                 {c.toUpperCase()}
               </button>
@@ -226,4 +218,3 @@ export default function IngestPage() {
     </div>
   );
 }
-

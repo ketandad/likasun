@@ -1,7 +1,6 @@
 """results indexes"""
 
 from alembic import op
-import sqlalchemy as sa
 
 revision = "4da2ee42382d"
 down_revision = "0002_evaluation"

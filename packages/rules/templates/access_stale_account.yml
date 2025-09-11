@@ -1,7 +1,7 @@
 template_id: STALE_ACCOUNT_90D
 title: Accounts used within 90 days
 logic:
-  '<=': [{'var': 'config.last_seen_days'}, 90]
+  '<=': [{ 'var': 'config.last_seen_days' }, 90]
 frameworks:
   - FEDRAMP_LOW
   - SOC2

@@ -5,7 +5,6 @@ from datetime import datetime, timezone
 from typing import List, Dict
 
 import boto3
-from botocore.exceptions import BotoCoreError, ClientError
 
 from .base import Connector
 from app.models.assets import Asset

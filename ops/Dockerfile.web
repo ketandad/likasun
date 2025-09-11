@@ -1,0 +1,18 @@
+# ---- build stage ----
+FROM node:20-alpine AS build
+WORKDIR /app
+COPY apps/web/package*.json ./
+RUN npm ci
+COPY apps/web/ .
+RUN npm run build
+
+# ---- runtime stage ----
+FROM node:20-alpine AS runtime
+RUN adduser -D -u 10002 raybeam
+WORKDIR /app
+COPY --from=build /app/.next/standalone ./
+COPY --from=build /app/.next/static ./.next/static
+COPY --from=build /app/public ./public
+USER 10002
+ENV NODE_ENV=production
+CMD ["node", "server.js"]

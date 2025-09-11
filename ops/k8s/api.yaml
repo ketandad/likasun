@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: raybeam-api }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: raybeam-api } }
+  template:
+    metadata: { labels: { app: raybeam-api } }
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile: { type: RuntimeDefault }
+      containers:
+        - name: api
+          image: yourrepo/raybeam-api:latest
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsUser: 10001
+            capabilities: { drop: ['ALL'] }
+          volumeMounts:
+            - name: api-data
+              mountPath: /data
+              readOnly: false
+          resources:
+            requests: { cpu: '100m', memory: '256Mi' }
+            limits: { cpu: '500m', memory: '512Mi' }
+      volumes:
+        - name: api-data
+          persistentVolumeClaim: { claimName: raybeam-api-pvc }
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: { name: deny-all-egress }
+spec:
+  podSelector: { matchLabels: { app: raybeam-api } }
+  policyTypes: ['Egress']
+  egress: [] # block all

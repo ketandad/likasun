@@ -1,0 +1,26 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - run: make lint
+      - name: Install Syft
+        run: curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+      - name: Install Grype
+        run: curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
+      - name: Build API image
+        run: docker build -f ops/Dockerfile.api -t yourrepo/raybeam-api:${{ github.sha }} .
+      - name: SBOM (Syft)
+        run: syft packages dir:. -o spdx-json > sbom.spdx.json
+      - name: Scan (Grype)
+        run: grype yourrepo/raybeam-api:${{ github.sha }} --fail-on high || true
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v3
+        with:
+          name: sbom
+          path: sbom.spdx.json
