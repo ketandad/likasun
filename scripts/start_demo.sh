@@ -4,8 +4,10 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
-# Default env
-export DATABASE_URL="${DATABASE_URL:-postgresql+psycopg2://raybeam:raybeam@localhost:5432/raybeam}"
+# Default env (only for local runs, not for Docker Compose)
+if [[ -z "${RUNNING_IN_DOCKER:-}" ]]; then
+  export DATABASE_URL="${DATABASE_URL:-postgresql+psycopg2://raybeam:raybeam@172.18.0.2:5432/raybeam}"
+fi
 export METRICS_ENABLED="${METRICS_ENABLED:-true}"
 export RB_ADMIN_EMAIL="${RB_ADMIN_EMAIL:-admin@local}"
 export RB_ADMIN_PASSWORD="${RB_ADMIN_PASSWORD:-admin}"
@@ -37,8 +39,25 @@ for i in {1..30}; do
 
 done
 
-echo "==> Running Alembic migrations"
-( cd apps/api && alembic upgrade head )
+
+echo "==> Starting API and Web containers"
+docker compose -f ops/docker-compose.yml up -d api web
+
+echo "==> Waiting for API (http://localhost:8000/health)"
+for i in {1..30}; do
+  if curl -sf http://localhost:8000/health >/dev/null; then
+    echo "API is up"
+    break
+  fi
+  sleep 2
+  if [[ $i -eq 30 ]]; then
+    echo "API failed to start" >&2
+    exit 1
+  fi
+done
+
+echo "==> Running Alembic migrations (in Docker)"
+docker compose -f ops/docker-compose.yml exec -w /app api alembic upgrade head
 
 if $prepare_only; then
   echo "Preparation done. Use VS Code Task 'Start RayBeam Demo' or run: bash scripts/start_demo.sh"
