@@ -22,6 +22,7 @@ services:
       DATABASE_URL: postgresql+psycopg2://raybeam:raybeam@db:5432/raybeam
       # egress allowlist (comma-separated domains). empty = block all
       EGRESS_ALLOWLIST: ''
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
     depends_on:
       db:
         condition: service_healthy
@@ -41,6 +42,8 @@ services:
       interval: 30s
       timeout: 3s
       retries: 5
+    ports:
+      - "8000:8000"
     networks: [internal]
 
   web:
@@ -50,6 +53,9 @@ services:
     depends_on: [api]
     environment:
       NEXT_PUBLIC_API_BASE: http://api:8000
+      HOSTNAME: 0.0.0.0
+      PORT: 3000
+    command: node server.js
     read_only: true
     tmpfs:
       - /tmp:rw,noexec,nosuid,nodev
@@ -57,6 +63,8 @@ services:
       - ALL
     security_opt:
       - no-new-privileges:true
+    ports:
+      - "3000:3000"
     networks: [internal]
 
 networks:

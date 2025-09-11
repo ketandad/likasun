@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
+import path from 'path';
 
-const licensePath = 'tests/fixtures/licenses/dev.json';
+const licensePath = path.join(__dirname, 'fixtures', 'licenses', 'dev.json');
 
 test('upload license shows details', async ({ page }) => {
   await page.route('**/settings/license', (route) =>

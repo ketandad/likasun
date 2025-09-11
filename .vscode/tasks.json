@@ -1,0 +1,11 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start RayBeam Demo",
+      "type": "shell",
+      "command": "bash scripts/start_demo.sh",
+      "problemMatcher": []
+    }
+  ]
+}
