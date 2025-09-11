@@ -1,4 +1,4 @@
-.PHONY: fmt lint test build compose-up compose-down
+.PHONY: fmt lint test build compose-up compose-down migrate migrate-rev downgrade
 
 fmt:
 	black .
@@ -15,8 +15,14 @@ test:
 build:
 	@echo "no build step defined"
 
-compose-up:
-	docker compose -f ops/docker-compose.yml up -d
+compose-up: ; docker compose -f ops/docker-compose.yml up -d
 
-compose-down:
-	docker compose -f ops/docker-compose.yml down
+compose-down: ; docker compose -f ops/docker-compose.yml down
+
+API_DIR=apps/api
+
+migrate: ; cd $(API_DIR) && alembic upgrade head
+
+migrate-rev: ; cd $(API_DIR) && alembic revision --autogenerate -m "$(m)"
+
+downgrade: ; cd $(API_DIR) && alembic downgrade -1
