@@ -44,16 +44,8 @@ jobs:
           cache-dependency-path: apps/api/requirements.txt
       - run: pip install -r apps/api/requirements.txt
       - run: pip install pytest
-      - name: Run migrations
-        run: alembic -c apps/api/alembic.ini upgrade head
-      - name: Run tests
-        run: |
-          pytest -q --junitxml=test-results/pytest.xml
-      - name: Upload JUnit
-        uses: actions/upload-artifact@v4
-        with:
-          name: api-tests-junit
-          path: test-results/pytest.xml
+      - run: alembic -c apps/api/alembic.ini upgrade head
+      - run: pytest
 
   web-e2e:
     runs-on: ubuntu-latest
@@ -68,13 +60,13 @@ jobs:
           cache-dependency-path: package-lock.json
       - name: Install deps
         run: npm ci
+      - run: npx playwright install --with-deps
       - name: Build and start app
         working-directory: apps/web
         run: |
           npm run build
           npm run start &
       - name: Run Playwright tests
-        working-directory: apps/web
         env:
           PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
-        run: npm run test:ci
+        run: npm --workspace apps/web run test:ci
