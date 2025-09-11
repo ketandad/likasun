@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
+import path from 'path';
 
-const fixture = 'tests/fixtures/ingest/aws_s3_inventory.csv';
+const fixture = path.join(__dirname, 'fixtures', 'ingest', 'aws_s3_inventory.csv');
 
 test('upload and parse CSV', async ({ page }) => {
   await page.route('**/ingest/files', (route) =>
