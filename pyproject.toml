@@ -39,3 +39,6 @@ exclude = ["node_modules", "dist", "build"]
 [build-system]
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[tool.poetry.dev-dependencies]
+httpx = "^0.25.0"

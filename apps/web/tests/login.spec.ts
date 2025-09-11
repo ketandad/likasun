@@ -1,13 +1,13 @@
 import { test, expect } from '@playwright/test';
 
 test('login redirects to dashboard', async ({ page }) => {
-  await page.route('**/api/auth/login', route =>
+  await page.route('**/api/auth/login', (route) =>
     route.fulfill({
-      json: { 
+      json: {
         token: 'test-token',
-        redirect: '/dashboard'
-      }
-    })
+        redirect: '/dashboard',
+      },
+    }),
   );
 
   await page.goto('/login');
@@ -18,8 +18,8 @@ test('login redirects to dashboard', async ({ page }) => {
   await page.waitForResponse('**/api/auth/login');
   await page.waitForURL('**/dashboard', { timeout: 30000 });
   await expect(page.getByText('Dashboard')).toBeVisible({ timeout: 15000 });
-});
-  
   await page.waitForURL('**/dashboard', { timeout: 45000 });
+  await expect(page.getByText('Dashboard')).toBeVisible({ timeout: 15000 });
+});
   await expect(page.getByText('Dashboard')).toBeVisible({ timeout: 15000 });
 });
