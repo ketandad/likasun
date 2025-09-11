@@ -11,6 +11,7 @@ from app.dependencies import get_db
 from app.ingest.parsers import get_parser
 from app.ingest.connectors import get_connector
 from app.models.assets import Asset
+from app.services.audit import record
 
 router = APIRouter(prefix="/ingest", tags=["ingest"])
 
@@ -27,6 +28,7 @@ async def upload_files(files: List[UploadFile] = File(...)) -> dict:
         dest = session_dir / file.filename
         dest.write_bytes(await file.read())
         uploads[file.filename] = f"{session_id}/{file.filename}"
+    record("INGEST_UPLOAD", resource=session_id, details={"files": list(uploads.keys())})
     return {"upload_ids": uploads}
 
 
@@ -52,6 +54,7 @@ def parse_uploads(
         else:
             db.add(Asset(**data))
     db.commit()
+    record("INGEST_PARSE", details={"assets": len(assets_data)})
     return {"assets": len(assets_data)}
 
 
@@ -75,6 +78,7 @@ def ingest_live(cloud: str, db: Session = Depends(get_db)) -> dict:
         else:
             db.add(asset)
     db.commit()
+    record("INGEST_LIVE", details={"ingested": len(assets)})
     return {"ingested": len(assets), "errors": []}
 
 

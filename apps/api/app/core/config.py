@@ -16,5 +16,7 @@ class Settings(BaseSettings):
 
     LICENSE_FILE: str = "/data/license.rbl"
 
+    METRICS_ENABLED: bool = False
+
 
 settings = Settings()

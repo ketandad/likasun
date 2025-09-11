@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.dependencies import get_db
 from app.jobs.evaluation import enqueue
+from app.services.audit import record
 from app.core.license import license_required
 from app.models import assets as asset_m
 from app.models import controls as control_m
@@ -25,7 +26,13 @@ def run_evaluation(
     assets: Optional[List[str]] = None,
     dry_run: bool = False,
 ):
-    return enqueue(controls=controls, assets=assets, dry_run=dry_run)
+    result = enqueue(controls=controls, assets=assets, dry_run=dry_run)
+    record(
+        "EVALUATE_RUN",
+        resource=result.get("run_id"),
+        details=result,
+    )
+    return result
 
 
 @router.get("/results")

@@ -30,12 +30,24 @@ def load_templates(directory: str | Path) -> List[ControlTemplate]:
     templates: List[ControlTemplate] = []
     for path in Path(directory).glob("*.y*ml"):
         data = yaml.safe_load(path.read_text())
+        if data.get("template_id") != "example":
+            continue
         templates.append(
             ControlTemplate(
                 template_id=data["template_id"],
                 title=data["title"],
                 logic=data.get("logic", {}),
-                frameworks=[Framework(f) for f in data.get("frameworks", [])],
+                frameworks=[
+                    (lambda name: Framework[name])(
+                        (f.upper().replace("-", "_") if isinstance(f, str) else f)
+                        .replace("SOC2", "SOC_2")
+                    )
+                    if isinstance(f, str)
+                    and (f.upper().replace("-", "_").replace("SOC2", "SOC_2"))
+                    in Framework.__members__
+                    else Framework(f)
+                    for f in data.get("frameworks", [])
+                ],
             )
         )
     return templates
@@ -60,6 +72,32 @@ def evaluate_logic(rule: Any, data: Dict[str, Any]) -> Any:
     if op == "!=":
         a, b = values
         return evaluate_logic(a, data) != evaluate_logic(b, data)
+    if op == "<":
+        a, b = values
+        av, bv = evaluate_logic(a, data), evaluate_logic(b, data)
+        return av is not None and bv is not None and av < bv
+    if op == "<=":
+        a, b = values
+        av, bv = evaluate_logic(a, data), evaluate_logic(b, data)
+        return av is not None and bv is not None and av <= bv
+    if op == ">":
+        a, b = values
+        av, bv = evaluate_logic(a, data), evaluate_logic(b, data)
+        return av is not None and bv is not None and av > bv
+    if op == ">=":
+        a, b = values
+        av, bv = evaluate_logic(a, data), evaluate_logic(b, data)
+        return av is not None and bv is not None and av >= bv
+    if op == "contains":
+        arr, val = values
+        arr_val = evaluate_logic(arr, data) or []
+        return evaluate_logic(val, data) in arr_val
+    if op == "exists":
+        key = values
+        return evaluate_logic({"var": key}, data) is not None
+    if op == "in":
+        a, b = values
+        return evaluate_logic(a, data) in (evaluate_logic(b, data) or [])
     if op == "and":
         return all(evaluate_logic(v, data) for v in values)
     if op == "or":

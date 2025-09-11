@@ -8,13 +8,14 @@ from typing import List
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from sqlalchemy.orm import Session
 
 from app.core.security import RoleChecker, get_current_user
 from app.dependencies import get_db
 from app.models import controls as control_m
 from app.models import exceptions as exc_m
+from app.services.audit import record
 
 router = APIRouter(prefix="/exceptions", tags=["exceptions"])
 
@@ -37,8 +38,7 @@ class ExceptionOut(BaseModel):
     created_by: str
     created_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 @router.post("/", dependencies=[Depends(admin_only)], response_model=ExceptionOut)
@@ -80,7 +80,8 @@ def create_exception(
     db.add(exc)
     db.commit()
     db.refresh(exc)
-    return ExceptionOut.from_orm(exc)
+    record("EXCEPTION_CREATE", actor=user.get("username"), resource=str(exc.id))
+    return ExceptionOut.model_validate(exc)
 
 
 @router.get("/", dependencies=[Depends(admin_only)], response_model=List[ExceptionOut])
@@ -93,14 +94,17 @@ def list_exceptions(
         today = date.today()
         query = query.filter(exc_m.Exception.expires_at >= today)
     excs = query.all()
-    return [ExceptionOut.from_orm(e) for e in excs]
+    return [ExceptionOut.model_validate(e) for e in excs]
 
 
 @router.delete("/{exc_id}", dependencies=[Depends(admin_only)])
-def delete_exception(exc_id: UUID, db: Session = Depends(get_db)) -> dict:
+def delete_exception(
+    exc_id: UUID, db: Session = Depends(get_db), user: dict = Depends(get_current_user)
+) -> dict:
     exc = db.get(exc_m.Exception, exc_id)
     if not exc:
         raise HTTPException(status_code=404, detail="Not found")
     db.delete(exc)
     db.commit()
+    record("EXCEPTION_DELETE", actor=user.get("username"), resource=str(exc_id))
     return {"deleted": True}
