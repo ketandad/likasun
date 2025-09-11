@@ -1,0 +1,16 @@
+{
+  "data": [
+    {
+      "id": "/subscriptions/1/resourceGroups/rg1/providers/Microsoft.Compute/virtualMachines/vm1",
+      "type": "Microsoft.Compute/virtualMachines",
+      "location": "eastus",
+      "tags": {"env": "prod"}
+    },
+    {
+      "id": "/subscriptions/1/resourceGroups/rg1/providers/Microsoft.Storage/storageAccounts/sa1",
+      "type": "Microsoft.Storage/storageAccounts",
+      "location": "eastus",
+      "tags": {"env": "dev"}
+    }
+  ]
+}
