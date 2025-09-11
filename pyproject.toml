@@ -12,6 +12,7 @@ dependencies = [
     "pydantic-settings",
     "PyJWT",
     "python-multipart",
+    "PyYAML",
 ]
 
 [tool.black]

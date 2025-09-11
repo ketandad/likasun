@@ -1,0 +1,7 @@
+template_id: example
+title: Ensure resource {type} in {env}
+logic:
+  var: enabled
+frameworks:
+  - PCI
+  - ISO 27001
