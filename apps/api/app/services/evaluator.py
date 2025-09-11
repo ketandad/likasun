@@ -185,8 +185,11 @@ def run_evaluation(
     status_counts: Dict[str, int] = {}
 
     for control in controls_list:
+        types = control.applies_to.get("types")
+        if not types and control.applies_to.get("type"):
+            types = [control.applies_to.get("type")]
         asset_query = session.query(asset_m.Asset).filter(
-            asset_m.Asset.type.in_(control.applies_to.get("types", []))
+            asset_m.Asset.type.in_(types or [])
         )
         if assets_scope:
             asset_query = asset_query.filter(
