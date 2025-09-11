@@ -1,0 +1,20 @@
+{
+  "assets": [
+    {
+      "name": "//compute.googleapis.com/projects/proj/zones/us-central1-a/instances/inst1",
+      "assetType": "compute.googleapis.com/Instance",
+      "resource": {
+        "location": "us-central1-a",
+        "data": {"labels": {"env": "prod"}}
+      }
+    },
+    {
+      "name": "//storage.googleapis.com/projects/_/buckets/bucket1",
+      "assetType": "storage.googleapis.com/Bucket",
+      "resource": {
+        "location": "US",
+        "data": {"labels": {"env": "dev"}}
+      }
+    }
+  ]
+}
