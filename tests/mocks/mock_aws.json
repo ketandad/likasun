@@ -1,0 +1,23 @@
+{
+  "ec2": [
+    {"InstanceId": "i-1", "Placement": {"AvailabilityZone": "us-east-1a"}, "Tags": [{"Key": "Name", "Value": "inst1"}]},
+    {"InstanceId": "i-2", "Placement": {"AvailabilityZone": "us-east-1b"}, "Tags": [{"Key": "Name", "Value": "inst2"}]}
+  ],
+  "s3": [
+    {"Name": "bucket1", "Region": "us-east-1"},
+    {"Name": "bucket2", "Region": "us-east-1"},
+    {"Name": "bucket3", "Region": "us-east-1"}
+  ],
+  "iam_users": [
+    {"UserName": "alice"},
+    {"UserName": "bob"}
+  ],
+  "rds": [
+    {"DBInstanceIdentifier": "db1", "AvailabilityZone": "us-east-1a"},
+    {"DBInstanceIdentifier": "db2", "AvailabilityZone": "us-east-1b"}
+  ],
+  "keys": [
+    {"AccessKeyId": "AKIA111", "UserName": "alice"},
+    {"AccessKeyId": "AKIA222", "UserName": "bob"}
+  ]
+}
