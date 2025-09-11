@@ -65,9 +65,8 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: apps/web/package-lock.json
+          cache-dependency-path: package-lock.json
       - name: Install deps
-        working-directory: apps/web
         run: npm ci
       - name: Build and start app
         working-directory: apps/web

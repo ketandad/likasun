@@ -18,7 +18,7 @@ fi
 echo "==> Installing deps (Python + Node)"
 pip install --upgrade pip >/dev/null
 pip install -r apps/api/requirements.txt >/dev/null
-npm ci --prefix apps/web >/dev/null
+npm ci >/dev/null
 
 echo "==> Starting Postgres via Docker Compose"
 docker compose -f ops/docker-compose.yml up -d db
