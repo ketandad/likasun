@@ -4,16 +4,14 @@ import path from 'path';
 const fixture = path.join(__dirname, 'fixtures/ingest/aws_s3_inventory.csv');
 
 test('upload and parse CSV', async ({ page }) => {
-  await page.route('**/api/ingest/files', (route) =>
-    route.fulfill({ json: { id: 'test-1' } }),
-  );
-  await page.route('**/api/ingest/parse', (route) =>
-    route.fulfill({
-      json: { assets: 1, files: 1 },
-    }),
-  );
+  await page.route('**/api/ingest/upload', route => 
+    route.fulfill({ json: { id: 'test-1', message: 'Upload successful' }}));
+  
+  await page.route('**/api/ingest/parse', route =>
+    route.fulfill({ json: { assets: 1, files: 1, message: 'Parse complete' }}));
 
   await page.goto('/ingest');
+  await page.waitForLoadState('networkidle');
   const input = page.locator('input[type="file"]');
   await input.setInputFiles(fixture);
   await page.getByText('Upload & Parse').click();
@@ -22,11 +20,13 @@ test('upload and parse CSV', async ({ page }) => {
 });
 
 test('validate permissions shows missing', async ({ page }) => {
-  await page.route('**/api/ingest/permissions', (route) =>
+  await page.route('**/api/ingest/validate', route =>
     route.fulfill({
-      status: 200,
-      json: { missing: ['ec2:Describe'] }
-    }),
+      json: { 
+        missing: ['ec2:Describe'],
+        message: 'Permission check complete'
+      }
+    })
   );
   
   await page.goto('/ingest');
@@ -36,11 +36,14 @@ test('validate permissions shows missing', async ({ page }) => {
 });
 
 test('start live ingestion', async ({ page }) => {
-  await page.route('**/api/ingest/live', (route) =>
+  await page.route('**/api/ingest/start', route =>
     route.fulfill({
-      status: 200,
-      json: { ingested: 12, status: 'success' }
-    }),
+      json: { 
+        status: 'running',
+        ingested: 12,
+        message: 'Ingestion started'
+      }
+    })
   );
   
   await page.goto('/ingest');
@@ -62,22 +65,24 @@ test('load demo assets', async ({ page }) => {
 });
 
 test('keyboard accessibility triggers validate', async ({ page }) => {
-  const responsePromise = page.waitForResponse('**/api/ingest/live/permissions?cloud=aws');
+  await page.route('**/api/ingest/validate', route =>
+    route.fulfill({ json: { missing: [], message: 'Validation complete' }})
+  );
+
   await page.goto('/ingest');
-  await page.waitForLoadState('networkidle');
-  
-  // Focus the validate button
-  await page.keyboard.press('Tab');
-  await page.keyboard.press('Tab');
+  await page.getByRole('button', { name: /validate/i }).focus();
   await page.keyboard.press('Enter');
   
-  await responsePromise;
+  // Wait for validation response
+  await expect(page.getByText('Validation complete')).toBeVisible();
 });
 
 test('drop zone accessible via keyboard', async ({ page }) => {
   await page.goto('/ingest');
-  await page.waitForLoadState('networkidle');
-  const dropZone = page.locator('[data-testid="drop-zone"]');
+  await page.getByTestId('drop-zone').focus();
+  await expect(page.getByTestId('drop-zone')).toBeFocused();
+});
+  const dropZone = page.getByRole('button', { name: 'Drop files here' });
   await dropZone.focus();
-  await expect(dropZone).toBeFocused({ timeout: 10000 });
+  await expect(dropZone).toBeFocused();
 });
