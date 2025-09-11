@@ -4,31 +4,20 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
-from io import BytesIO
 from pathlib import Path
 from typing import Dict, List, Tuple
 
+import io
 import yaml
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
 from sqlalchemy.orm import Session
 
 from app.dependencies import get_db
 from app.models import results as result_m, runs as run_m
 from app.core.license import license_required
-
-try:
-    from reportlab.lib.pagesizes import letter
-    from reportlab.lib.styles import getSampleStyleSheet
-    from reportlab.platypus import (
-        SimpleDocTemplate,
-        Paragraph,
-        Spacer,
-        Table,
-        PageBreak,
-    )
-except Exception:  # pragma: no cover - reportlab may be missing in some environments
-    SimpleDocTemplate = None  # type: ignore
 
 
 class Framework(str, Enum):
@@ -84,10 +73,13 @@ for fw, fname in FRAMEWORK_FILES.items():
 _summary_cache: Dict[Tuple[Framework, str], Dict] = {}
 
 
-def _latest_run_id(db: Session) -> str | None:
-    return db.query(run_m.EvaluationRun.run_id).order_by(
-        run_m.EvaluationRun.started_at.desc()
-    ).limit(1).scalar()
+def get_latest_run_id(db: Session) -> str | None:
+    return (
+        db.query(run_m.EvaluationRun.run_id)
+        .order_by(run_m.EvaluationRun.started_at.desc())
+        .limit(1)
+        .scalar()
+    )
 
 
 def _compute_requirement_status(statuses: List[str]) -> str:
@@ -105,7 +97,7 @@ def _compute_requirement_status(statuses: List[str]) -> str:
 
 
 def _build_summary(framework: Framework, db: Session) -> Dict:
-    run_id = _latest_run_id(db)
+    run_id = get_latest_run_id(db)
     if run_id is None:
         raise HTTPException(status_code=404, detail="No evaluation runs found")
     cache_key = (framework, run_id)
@@ -166,6 +158,60 @@ def _build_summary(framework: Framework, db: Session) -> Dict:
     return summary
 
 
+def load_framework_mapping(framework: str) -> List[Dict]:
+    try:
+        fw = Framework(framework)
+    except ValueError:
+        return []
+    return _mappings_cache.get(fw, [])
+
+
+def compute_framework_summary(framework: str, run_id: str, db: Session) -> Dict[str, int]:
+    counts = {"pass": 0, "fail": 0, "na": 0, "waived": 0}
+    mapping = load_framework_mapping(framework)
+    if not run_id or not mapping:
+        return counts
+    for item in mapping:
+        control_ids = item.get("mapped_controls", [])
+        statuses = [
+            r[0]
+            for r in db.query(result_m.Result.status)
+            .filter(
+                result_m.Result.run_id == run_id,
+                result_m.Result.control_id.in_(control_ids),
+            )
+            .all()
+        ]
+        req_status = _compute_requirement_status(statuses)
+        counts[req_status.lower()] += 1
+    return counts
+
+
+def list_failed_requirements(
+    framework: str, run_id: str, db: Session, limit: int = 50
+) -> List[Tuple[str, str, List[str]]]:
+    failed: List[Tuple[str, str, List[str]]] = []
+    mapping = load_framework_mapping(framework)
+    if not run_id or not mapping:
+        return failed
+    for item in mapping:
+        control_ids = item.get("mapped_controls", [])
+        has_fail = (
+            db.query(result_m.Result)
+            .filter(
+                result_m.Result.run_id == run_id,
+                result_m.Result.control_id.in_(control_ids),
+                result_m.Result.status == "FAIL",
+            )
+            .first()
+        )
+        if has_fail:
+            failed.append((item.get("requirement_id"), item.get("title"), control_ids))
+            if len(failed) >= limit:
+                break
+    return failed
+
+
 @router.get("/summary")
 def compliance_summary(
     *, framework: Framework = Query(...), db: Session = Depends(get_db)
@@ -174,71 +220,68 @@ def compliance_summary(
 
 
 @router.get("/evidence-pack")
-def compliance_evidence_pack(
-    *, framework: Framework = Query(...), db: Session = Depends(get_db)
+def evidence_pack(
+    framework: str = Query(..., alias="framework"),
+    run_id: str | None = None,
+    db: Session = Depends(get_db),
 ):
-    data = _build_summary(framework, db)
-    if SimpleDocTemplate is None:
-        raise HTTPException(status_code=500, detail="PDF generator not available")
-    buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=letter)
-    styles = getSampleStyleSheet()
-    story: List = []
-
-    # Cover page
-    story.append(Paragraph(f"{framework.value} Evidence Pack", styles["Title"]))
-    story.append(Spacer(1, 12))
-    story.append(Paragraph(datetime.utcnow().strftime("%Y-%m-%d"), styles["Normal"]))
-    story.append(Paragraph(f"Run ID: {data['run_id']}", styles["Normal"]))
-    story.append(PageBreak())
-
-    # Executive summary
-    summary = data["summary"]
-    story.append(Paragraph("Executive Summary", styles["Heading1"]))
-    story.append(Paragraph(f"Score: {summary['score_percent']}%", styles["Normal"]))
-    story.append(
-        Paragraph(
-            f"Totals - PASS: {summary['pass']}, FAIL: {summary['fail']}, NA: {summary['na']}, WAIVED: {summary['waived']}",
-            styles["Normal"],
+    mapping = load_framework_mapping(framework)
+    if not mapping:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unknown or empty framework mapping: {framework}",
         )
+
+    rid = run_id or get_latest_run_id(db)
+    if not rid:
+        rid = "none"
+
+    buf = io.BytesIO()
+    c = canvas.Canvas(buf, pagesize=A4)
+    w, h = A4
+    y = h - 36
+
+    c.setFont("Helvetica-Bold", 14)
+    c.drawString(36, y, f"RayBeam Evidence Pack — {framework}")
+    y -= 18
+    c.setFont("Helvetica", 10)
+    c.drawString(36, y, f"Run: {rid}   Generated: {datetime.utcnow().isoformat()}Z")
+    y -= 24
+
+    summary = compute_framework_summary(framework, rid, db)
+    c.drawString(
+        36,
+        y,
+        f"Summary: PASS={summary.get('pass',0)}  FAIL={summary.get('fail',0)}  NA={summary.get('na',0)}  WAIVED={summary.get('waived',0)}",
     )
-    story.append(PageBreak())
+    y -= 24
 
-    # Coverage matrix
-    story.append(Paragraph("Coverage Matrix", styles["Heading1"]))
-    table_data = [["Requirement", "Status"]]
-    for r in data["requirements"]:
-        table_data.append([f"{r['id']}: {r['title']}", r["status"]])
-    story.append(Table(table_data))
-    story.append(PageBreak())
+    failed = list_failed_requirements(framework, rid, db, limit=50)
+    if not failed:
+        c.drawString(36, y, "No failed requirements for this run.")
+        y -= 18
+    else:
+        c.setFont("Helvetica-Bold", 12)
+        c.drawString(36, y, "Failed Requirements:")
+        y -= 18
+        c.setFont("Helvetica", 10)
+        for req_id, title, controls in failed:
+            line = f"• {req_id} — {title} (controls: {', '.join(controls)[:120]})"
+            if y < 60:
+                c.showPage()
+                y = h - 36
+                c.setFont("Helvetica", 10)
+            c.drawString(36, y, line)
+            y -= 14
 
-    # Failed requirements
-    story.append(Paragraph("Failed Requirements", styles["Heading1"]))
-    for r in data["requirements"]:
-        if r["status"] == "FAIL":
-            story.append(Paragraph(f"{r['id']} - {r['title']}", styles["Heading2"]))
-            for ev in r["evidence"]:
-                story.append(
-                    Paragraph(
-                        f"{ev['control_id']} / {ev['asset_id']}: {ev['status']}",
-                        styles["Normal"],
-                    )
-                )
-    story.append(PageBreak())
+    c.showPage()
+    c.save()
+    buf.seek(0)
 
-    # Exceptions
-    story.append(Paragraph("Exceptions", styles["Heading1"]))
-    for r in data["requirements"]:
-        if r["status"] == "WAIVED":
-            story.append(Paragraph(f"{r['id']} - {r['title']}", styles["Normal"]))
-
-    doc.build(story)
-    buffer.seek(0)
     headers = {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": f"attachment; filename=raybeam_evidence_{framework.value}_{data['run_id']}.pdf",
+        "Content-Disposition": f'attachment; filename="raybeam_evidence_{framework}_{rid}.pdf"'
     }
-    return StreamingResponse(buffer, media_type="application/pdf", headers=headers)
+    return StreamingResponse(buf, media_type="application/pdf", headers=headers)
 
 
 @router.get("/export.csv")

@@ -26,3 +26,7 @@ migrate: ; cd $(API_DIR) && alembic upgrade head
 migrate-rev: ; cd $(API_DIR) && alembic revision --autogenerate -m "$(m)"
 
 downgrade: ; cd $(API_DIR) && alembic downgrade -1
+
+demo-pack:
+	./ops/make_demo_pack.sh
+	@echo "Use the pack at tmp/demo_ingest_pack.tar.gz"

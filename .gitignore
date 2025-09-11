@@ -22,3 +22,11 @@ dist/
 
 # OS
 .DS_Store
+
+# demo packs & any archives
+*.tar.gz
+*.tgz
+*.zip
+
+# local build outputs
+/tmp/

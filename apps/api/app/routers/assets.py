@@ -1,5 +1,6 @@
 """Assets endpoints."""
 
+from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
@@ -8,6 +9,7 @@ from app.models import assets as asset_m
 from app.models import controls as control_m
 from app.models import results as result_m
 from app.models import runs as run_m
+from app.ingest.parsers import get_parser
 
 router = APIRouter(prefix="/assets", tags=["assets"])
 
@@ -30,6 +32,52 @@ def list_assets(db: Session = Depends(get_db)) -> list[dict]:
         }
         for a in assets
     ]
+
+
+@router.post("/load-demo")
+def load_demo_assets(db: Session = Depends(get_db)) -> dict:
+    fixture_dir = Path("tests/fixtures/ingest")
+    files = [
+        "aws_s3_inventory.csv",
+        "aws_iam_credential_report.csv",
+        "azure_resource_graph.json",
+        "gcp_asset_inventory.json",
+        "terraform_plan.json",
+    ]
+    total = 0
+    for name in files:
+        path = fixture_dir / name
+        if not path.exists():
+            continue
+        if name.startswith("aws_"):
+            parser = get_parser("aws")
+        elif name.startswith("azure_"):
+            parser = get_parser("azure")
+        elif name.startswith("gcp_"):
+            parser = get_parser("gcp")
+        else:
+            parser = get_parser("iac")
+        assets = parser([path])
+        for data in assets:
+            tags = data.get("tags") or {}
+            tags["env"] = "demo"
+            data["tags"] = tags
+            existing = (
+                db.query(asset_m.Asset)
+                .filter(
+                    asset_m.Asset.asset_id == data["asset_id"],
+                    asset_m.Asset.cloud == data["cloud"],
+                )
+                .one_or_none()
+            )
+            if existing:
+                for key, value in data.items():
+                    setattr(existing, key, value)
+            else:
+                db.add(asset_m.Asset(**data))
+        total += len(assets)
+    db.commit()
+    return {"ingested": total}
 
 
 @router.get("/{asset_id}")
