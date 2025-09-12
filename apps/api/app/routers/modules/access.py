@@ -16,7 +16,7 @@ from app.models import actors as actor_m
 
 router = APIRouter(prefix="/modules/access", tags=["modules"])
 
-UPLOAD_DIR = Path("/data/uploads/modules/access")
+UPLOAD_DIR = Path("./data/uploads/modules/access")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 

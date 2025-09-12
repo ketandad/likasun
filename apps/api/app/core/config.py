@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     ADMIN_USERNAME: str | None = None
     ADMIN_PASSWORD: str | None = None
 
-    LICENSE_FILE: str = "/data/license.rbl"
+    LICENSE_FILE: str = "./data/license.rbl"
 
     METRICS_ENABLED: bool = False
 

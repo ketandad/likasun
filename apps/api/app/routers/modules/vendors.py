@@ -17,7 +17,7 @@ from app.models import assets as asset_m
 
 router = APIRouter(prefix="/modules/vendors", tags=["modules"])
 
-UPLOAD_DIR = Path("/data/uploads/modules/vendors")
+UPLOAD_DIR = Path("./data/uploads/modules/vendors")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 

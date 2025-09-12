@@ -15,7 +15,7 @@ from app.models import assets as asset_m
 
 router = APIRouter(prefix="/modules/policy", tags=["modules"])
 
-UPLOAD_DIR = Path("/data/uploads/modules/policy")
+UPLOAD_DIR = Path("./data/uploads/modules/policy")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 

@@ -14,7 +14,7 @@ from app.models import results as result_m
 
 router = APIRouter(prefix="/modules/residency", tags=["modules"])
 
-POLICY_PATH = Path("/data/policies/residency.yaml")
+POLICY_PATH = Path("./data/policies/residency.yaml")
 POLICY_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 
