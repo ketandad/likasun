@@ -1,4 +1,9 @@
-```toml
+[tool.poetry]
+name = "raybeam-api"
+version = "0.1.0"
+description = "Raybeam API Service"
+authors = ["Your Name <you@example.com>"]
+
 [tool.poetry]
 name = "raybeam-api"
 version = "0.1.0"
@@ -34,4 +39,3 @@ select = [
     "I",  # isort
 ]
 ignore = ["E501"]  # Line too long
-```

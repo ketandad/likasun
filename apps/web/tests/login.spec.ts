@@ -21,5 +21,4 @@ test('login redirects to dashboard', async ({ page }) => {
   await page.waitForURL('**/dashboard', { timeout: 45000 });
   await expect(page.getByText('Dashboard')).toBeVisible({ timeout: 15000 });
 });
-  await expect(page.getByText('Dashboard')).toBeVisible({ timeout: 15000 });
-});
+  

@@ -84,5 +84,4 @@ test('drop zone accessible via keyboard', async ({ page }) => {
   await dropZone.focus();
   await expect(dropZone).toBeFocused();
 });
-  await expect(dropZone).toBeFocused();
-});
+  
