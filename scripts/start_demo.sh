@@ -4,9 +4,46 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
+
 # Default env (only for local runs, not for Docker Compose)
 if [[ -z "${RUNNING_IN_DOCKER:-}" ]]; then
   export DATABASE_URL="${DATABASE_URL:-postgresql+psycopg2://raybeam:raybeam@172.18.0.2:5432/raybeam}"
+
+  # Ensure Python, pip, and git-lfs are installed (for Codespaces/devcontainers/local)
+  if ! command -v python3 >/dev/null 2>&1; then
+    echo "Python3 not found. Installing..."
+    if command -v apt-get >/dev/null 2>&1; then
+      sudo apt-get update && sudo apt-get install -y python3
+    elif command -v apk >/dev/null 2>&1; then
+      sudo apk add --no-cache python3
+    else
+      echo "Please install Python3 manually." >&2
+      exit 1
+    fi
+  fi
+  if ! command -v pip >/dev/null 2>&1; then
+    echo "pip not found. Installing..."
+    if command -v apt-get >/dev/null 2>&1; then
+      sudo apt-get update && sudo apt-get install -y python3-pip
+    elif command -v apk >/dev/null 2>&1; then
+      sudo apk add --no-cache py3-pip
+    else
+      echo "Please install pip manually." >&2
+      exit 1
+    fi
+  fi
+  if ! command -v git-lfs >/dev/null 2>&1; then
+    echo "git-lfs not found. Installing..."
+    if command -v apt-get >/dev/null 2>&1; then
+      sudo apt-get update && sudo apt-get install -y git-lfs
+    elif command -v apk >/dev/null 2>&1; then
+      sudo apk add --no-cache git-lfs
+    else
+      echo "Please install git-lfs manually." >&2
+      exit 1
+    fi
+    git lfs install
+  fi
 fi
 export METRICS_ENABLED="${METRICS_ENABLED:-true}"
 export RB_ADMIN_EMAIL="${RB_ADMIN_EMAIL:-admin@local}"
