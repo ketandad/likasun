@@ -4,12 +4,6 @@ version = "0.1.0"
 description = "Raybeam API Service"
 authors = ["Your Name <you@example.com>"]
 
-[tool.poetry]
-name = "raybeam-api"
-version = "0.1.0"
-description = "Raybeam API Service"
-authors = ["Your Name <you@example.com>"]
-
 [tool.poetry.dependencies]
 python = "^3.11"
 fastapi = "^0.100.0"

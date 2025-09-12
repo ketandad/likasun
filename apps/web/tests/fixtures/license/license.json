@@ -1,0 +1,1 @@
+{"org": "Acme", "edition": "Pro", "features": ["feature1"], "seats": 10, "expiry": "2099-12-31", "jti": "test-jti", "iat": "2025-01-01", "scope": "*"}
