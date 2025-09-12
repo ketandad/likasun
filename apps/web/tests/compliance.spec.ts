@@ -1,6 +1,12 @@
 import { test, expect } from '@playwright/test';
 
 test('compliance matrix and exports', async ({ page }) => {
+  // Log unexpected requests
+  page.on('request', request => {
+    if (!request.url().includes('/api/compliance/matrix')) {
+      console.log('Unexpected request:', request.url());
+    }
+  });
   await page.route('**/api/compliance/matrix', route =>
     route.fulfill({
       json: {
@@ -11,10 +17,11 @@ test('compliance matrix and exports', async ({ page }) => {
       }
     })
   );
-
   await page.goto('/compliance');
   await page.waitForLoadState('networkidle');
-  await page.selectOption('select', { label: 'FedRAMP M' });
-  await expect(page.getByRole('heading', { name: /Coverage matrix for FedRAMP M/i }))
-    .toBeVisible({ timeout: 15000 });
+  const select = page.locator('select');
+  await expect(select).toBeEnabled({ timeout: 5000 });
+  await select.selectOption({ label: 'FedRAMP M' });
+  const heading = page.getByRole('heading', { name: /Coverage matrix for FedRAMP M/i });
+  await expect(heading).toBeVisible({ timeout: 15000 });
 });
