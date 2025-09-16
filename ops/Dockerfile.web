@@ -5,6 +5,7 @@ COPY apps/web/package.json ./
 COPY package-lock.json ./
 RUN npm ci
 COPY apps/web/ .
+RUN npm config set cache /workspaces/likasun/.npm-cache && npm config set prefix /workspaces/likasun/.npm-global
 RUN npm run build
 
 # ---- runtime stage ----

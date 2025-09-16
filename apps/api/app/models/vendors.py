@@ -1,8 +1,9 @@
+
 from sqlalchemy import JSON, String
 from sqlalchemy.orm import Mapped, mapped_column
+from pydantic import BaseModel
 
 from .db import Base
-
 
 class Vendor(Base):
     __tablename__ = "vendors"
@@ -15,3 +16,17 @@ class Vendor(Base):
     dpia_status: Mapped[str] = mapped_column(String)
     risk: Mapped[str] = mapped_column(String)
     meta: Mapped[dict] = mapped_column(JSON, default=dict)
+
+# Pydantic model for FastAPI response
+class VendorModel(BaseModel):
+    id: int
+    vendor_id: str
+    product: str
+    scopes: dict
+    data_classes: dict
+    dpia_status: str
+    risk: str
+    meta: dict
+
+    class Config:
+        from_attributes = True

@@ -38,14 +38,17 @@ class UserIn(BaseModel):
     role: str = "viewer"
 
 
+import bcrypt
+
 @router.post("/register")
 async def register(user: UserIn) -> dict:
     check_seats(len(users_db) + 1)
     if user.username in users_db:
         raise HTTPException(status_code=400, detail="User exists")
+    hashed = bcrypt.hashpw(user.password.encode(), bcrypt.gensalt()).decode()
     users_db[user.username] = {
         "username": user.username,
-        "password": user.password,
+        "password": hashed,
         "role": user.role,
     }
     return {"status": "ok"}

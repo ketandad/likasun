@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.core.security import users_db
+import bcrypt
 from app.core.license import load_license, check_seats
 from app.core.logging import LoggingMiddleware
 from app.metrics import router as metrics_router
@@ -28,14 +29,13 @@ def bootstrap() -> None:
     load_license()
     if settings.ADMIN_USERNAME and settings.ADMIN_PASSWORD:
         check_seats(len(users_db) + 1)
-        users_db.setdefault(
-            settings.ADMIN_USERNAME,
-            {
+        if settings.ADMIN_USERNAME not in users_db:
+            hashed = bcrypt.hashpw(settings.ADMIN_PASSWORD.encode(), bcrypt.gensalt()).decode()
+            users_db[settings.ADMIN_USERNAME] = {
                 "username": settings.ADMIN_USERNAME,
-                "password": settings.ADMIN_PASSWORD,
+                "password": hashed,
                 "role": "admin",
-            },
-        )
+            }
 
 
 @app.get("/health")

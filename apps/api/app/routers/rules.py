@@ -1,6 +1,6 @@
-"""Rules endpoints for rule-pack management."""
 
 from __future__ import annotations
+"""Rules endpoints for rule-pack management."""
 
 import io
 import tarfile

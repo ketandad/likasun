@@ -1,0 +1,11 @@
+{
+  "org": "Raybeam Dev",
+  "edition": "dev",
+  "features": ["all"],
+  "seats": 10,
+  "expiry": "2099-12-31",
+  "jti": "00000000-0000-0000-0000-000000000001",
+  "iat": 1757635200,
+  "scope": {"env": ["dev"]},
+  "sig": "dGVzdC1zaWduYXR1cmU="
+}

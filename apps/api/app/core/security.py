@@ -5,7 +5,9 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from typing import Any, Dict, Optional
 
+
 import jwt
+import bcrypt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 
@@ -30,7 +32,10 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
 
 def authenticate_user(username: str, password: str) -> Optional[dict]:
     user = users_db.get(username)
-    if not user or user.get("password") != password:
+    if not user:
+        return None
+    hashed = user.get("password")
+    if not hashed or not bcrypt.checkpw(password.encode(), hashed.encode()):
         return None
     return user
 

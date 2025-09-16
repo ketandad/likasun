@@ -1,8 +1,21 @@
 import axios from 'axios';
 
+
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE,
   withCredentials: true,
+});
+
+// Attach JWT from localStorage to all requests
+api.interceptors.request.use((config) => {
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('rb.jwt');
+    if (token) {
+  if (!config.headers) config.headers = {} as any;
+  (config.headers as any)['Authorization'] = `Bearer ${token}`;
+    }
+  }
+  return config;
 });
 
 api.interceptors.response.use(

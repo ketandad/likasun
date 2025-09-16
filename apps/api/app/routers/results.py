@@ -1,6 +1,79 @@
-"""Results endpoints."""
 
 from __future__ import annotations
+
+"""Results endpoints."""
+
+from fastapi.responses import JSONResponse
+from app.dependencies import get_db
+from fastapi import APIRouter, Depends, Query
+router = APIRouter(prefix="/results", tags=["results"])
+
+@router.get("/export.json")
+def export_results_json(
+    *,
+    status: ResultStatus | None = Query(None),
+    severity: Severity | None = Query(None),
+    env: str | None = Query(None),
+    cloud: CloudEnum | None = Query(None),
+    category: str | None = Query(None),
+    framework: str | None = Query(None),
+    control_id: str | None = Query(None),
+    type: str | None = Query(None, alias="type"),
+    asset_id: str | None = Query(None),
+    run_id: str | None = Query(None),
+    evaluated_from: datetime | None = Query(None),
+    evaluated_to: datetime | None = Query(None),
+    db: Session = Depends(get_db),
+) -> JSONResponse:
+    query, actual_run_id = _build_query(
+        db,
+        run_id=run_id,
+        status=status,
+        severity=severity,
+        env=env,
+        cloud=cloud,
+        category=category,
+        framework=framework,
+        control_id=control_id,
+        type_=type,
+        asset_id=asset_id,
+        evaluated_from=evaluated_from,
+        evaluated_to=evaluated_to,
+    )
+    results = []
+    controls_meta = {}
+    for r, a, c in query.all():
+        results.append({
+            "run_id": r.run_id,
+            "evaluated_at": r.evaluated_at.isoformat(),
+            "status": r.status,
+            "severity": r.severity,
+            "category": c.category,
+            "framework_ids": r.frameworks,
+            "control_id": r.control_id,
+            "control_title": r.control_title,
+            "asset_id": r.asset_id,
+            "asset_type": a.type,
+            "cloud": a.cloud,
+            "region": a.region,
+            "env": (a.tags or {}).get("env"),
+            "evidence_source": (r.evidence or {}).get("source"),
+            "evidence_pointer": (r.evidence or {}).get("pointer"),
+            "fix": (r.fix or {}).get("short"),
+        })
+        if c.control_id not in controls_meta:
+            controls_meta[c.control_id] = {
+                "control_id": c.control_id,
+                "title": c.title,
+                "category": c.category,
+                "severity": c.severity,
+            }
+    bundle = {
+        "run_id": actual_run_id or "",
+        "results": results,
+        "controls": list(controls_meta.values()),
+    }
+
 
 from datetime import datetime
 from enum import Enum
